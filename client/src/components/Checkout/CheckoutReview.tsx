@@ -1,9 +1,9 @@
 import { CheckIcon, CreditCardIcon, TruckIcon } from "lucide-react";
-import type { Address } from "../../types";
+import type { Address, CartItem } from "../../types";
 
 interface CheckoutReviewProps {
     address: Address;
-    items: any[];
+    items: CartItem[];
     handlePlaceOrder: () => void;
     loading: boolean;
     total: number;

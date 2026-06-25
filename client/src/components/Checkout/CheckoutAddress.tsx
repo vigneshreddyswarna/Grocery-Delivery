@@ -1,7 +1,15 @@
 import { ChevronRightIcon, MapPinIcon, PlusIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import type { Address, User } from '../../types';
 
-const CheckoutAddress = ({ user, address, setAddress, setStep }: any) => {
+interface CheckoutAddressProps {
+    user: User | null
+    address: Address
+    setAddress: React.Dispatch<React.SetStateAction<Address>>
+    setStep: React.Dispatch<React.SetStateAction<string>>
+}
+
+const CheckoutAddress = ({ user, address, setAddress, setStep }: CheckoutAddressProps) => {
     const hasValidMapPoints = Number.isFinite(Number(address.lat)) && Number.isFinite(Number(address.lng)) && !(Number(address.lat) === 0 && Number(address.lng) === 0)
 
     return (
@@ -13,10 +21,11 @@ const CheckoutAddress = ({ user, address, setAddress, setStep }: any) => {
                 <div className="mb-6">
                     <h3 className="text-sm font-semibold text-app-green mb-3">Saved Addresses</h3>
                     <div className="grid sm:grid-cols-2 gap-3">
-                        {user.addresses.map((addr: any) => (
+                        {user.addresses.map((addr) => (
                             <div
                                 key={addr.id || addr.label}
                                 onClick={() => setAddress({
+                                    id: addr.id,
                                     label: addr.label,
                                     address: addr.address,
                                     city: addr.city,
@@ -24,6 +33,7 @@ const CheckoutAddress = ({ user, address, setAddress, setStep }: any) => {
                                     zip: addr.zip,
                                     lat: addr.lat,
                                     lng: addr.lng,
+                                    isDefault: addr.isDefault,
                                 })}
                                 className={`p-4 rounded-xl border cursor-pointer transition-colors ${address.label === addr.label && address.address === addr.address ? 'border-app-green bg-app-cream' : 'border-app-border hover:bg-app-cream'}`}
                             >

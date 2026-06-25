@@ -85,7 +85,7 @@ const Products = () => {
   const clearFilters = ()=>setSearchParams({})
 
   const activeCategory = categoriesData.find((c)=> c.slug === category)
-  const hasFilters = category || organic || minPrice || maxPrice
+  const hasFilters = Boolean(category || organic || minPrice || maxPrice)
 
   useEffect(()=>{
     const request = window.setTimeout(() => void fetchProducts(), 0)

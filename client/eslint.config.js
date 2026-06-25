@@ -18,5 +18,11 @@ export default defineConfig([
     languageOptions: {
       globals: globals.browser,
     },
+    rules: {
+      // Context modules conventionally export both a provider and its typed hook.
+      'react-refresh/only-export-components': 'off',
+      // Async data loaders invoked by effects intentionally update loading state.
+      'react-hooks/set-state-in-effect': 'off',
+    },
   },
 ])

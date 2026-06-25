@@ -2,7 +2,25 @@ import { Request, Response } from "express";
 import { prisma } from "../config/prisma.js";
 import { inngest } from "../inngest/index.js";
 import Stripe from 'stripe'
-import { fulfillPaidOrder } from "../services/orderPayment.js";
+import { fulfillPaidOrder, releaseUnpaidOrder } from "../services/orderPayment.js";
+import { canTransitionOrder, isOrderStatus } from "../utils/orderStatus.js";
+import { cleanString, isPositiveInteger, isValidCoordinate } from "../utils/validation.js";
+
+type RequestedItem = {product:string,quantity:number}
+
+const parseShippingAddress = (value: unknown) => {
+    if(!value || typeof value !== "object") return null
+    const body=value as Record<string,unknown>
+    const address={
+        id:cleanString(body.id,100), label:cleanString(body.label,40),
+        address:cleanString(body.address,300), city:cleanString(body.city,100),
+        state:cleanString(body.state,100), zip:cleanString(body.zip,20),
+        lat:Number(body.lat), lng:Number(body.lng),
+    }
+    return address.address && address.city && address.state && address.zip
+        && isValidCoordinate(address.lat,"lat") && isValidCoordinate(address.lng,"lng")
+        ? address : null
+}
 
 type LiveLocationPayload = {
     lat?: number | string
@@ -34,33 +52,44 @@ const getSharedLiveLocation = (liveLocation: unknown) => {
 // Create order
 // POST /api/orders
 export const createOrder = async (req: Request, res: Response) => {
-    const { items, shippingAddress, paymentMethod } = req.body
+    const { items, paymentMethod } = req.body
+    const shippingAddress=parseShippingAddress(req.body.shippingAddress)
 
     if (!["card", "upi", "cash"].includes(paymentMethod)) {
         return res.status(400).json({ message: "Invalid payment method" })
     }
 
     // Check if order items are empty
-    if (!items || items.length === 0) {
+    if (!Array.isArray(items) || items.length === 0 || items.length > 100) {
         return res.status(400).json({ message: "No order items" })
     }
+    if(!shippingAddress) return res.status(400).json({message:"A valid shipping address is required"})
+
+    const quantities=new Map<string,number>()
+    for(const raw of items as Array<Record<string,unknown>>){
+        const product=cleanString(raw.product,100)
+        if(!product || !isPositiveInteger(raw.quantity))
+            return res.status(400).json({message:"Every item needs a valid product and quantity"})
+        quantities.set(product,(quantities.get(product) || 0)+Number(raw.quantity))
+    }
+    const requestedItems:RequestedItem[]=[...quantities].map(([product,quantity])=>({product,quantity}))
 
     //Look up actual prices from the database
 
-    const productIds = items.map((i: any) => i.product)
+    const productIds = requestedItems.map((i) => i.product)
     const products = await prisma.product.findMany({ where: { id: { in: productIds } } })
     const productMap: Record<string, (typeof products)[0]> = {}
 
     products.forEach((p: any) => (productMap[p.id] = p))
 
     // Check if product is in stock
-    for (const item of items) {
+    for (const item of requestedItems) {
         const product = productMap[item.product]
         if (!product || (product.stock ?? 0) < item.quantity) {
             return res.status(404).json({ message: "Product out of stock" })
         }
     }
-    const orderItems = items.map((item: any) => {
+    const orderItems = requestedItems.map((item) => {
         const dbProduct = productMap[item.product]
         if (!dbProduct) throw new Error(`Product ${item.product} not found`);
         return {
@@ -76,27 +105,37 @@ export const createOrder = async (req: Request, res: Response) => {
     const deliveryFee = subtotal >= 499 ? 0 : 35
     const tax = Math.round(subtotal * 0.05 * 100) / 100
     const total = Math.round((subtotal + deliveryFee + tax) * 100) / 100
-    const order = await prisma.order.create({
-        data: {
-            userId: req.user!.id,
-            items: orderItems,
-            shippingAddress,
-            paymentMethod,
-            subtotal,
-            deliveryFee,
-            tax,
-            total,
-            statusHistory: [{ status: "Placed", note: "Order placed successfully", timestamp: new Date() }]
+    const order = await prisma.$transaction(async(tx)=>{
+        for(const item of orderItems){
+            const reserved=await tx.product.updateMany({
+                where:{id:item.product,stock:{gte:item.quantity}},
+                data:{stock:{decrement:item.quantity}}
+            })
+            if(reserved.count !== 1) throw new Error(`OUT_OF_STOCK:${item.name}`)
         }
+        return tx.order.create({data:{
+            userId:req.user!.id,items:orderItems,shippingAddress,paymentMethod,
+            subtotal,deliveryFee,tax,total,
+            statusHistory:[{status:"Placed",note:"Order placed successfully",timestamp:new Date()}]
+        }})
+    }).catch((error:unknown)=>{
+        if(error instanceof Error && error.message.startsWith("OUT_OF_STOCK:")) return null
+        throw error
     })
+    if(!order) return res.status(409).json({message:"An item became unavailable. Please review your cart."})
     if (paymentMethod === "card" || paymentMethod === "upi") {
-        const stripe=new Stripe(process.env.STRIPE_SECRET_KEY as string)
+        if(!process.env.STRIPE_SECRET_KEY){
+            await releaseUnpaidOrder(order.id)
+            return res.status(503).json({message:"Online payments are unavailable"})
+        }
+        const stripe=new Stripe(process.env.STRIPE_SECRET_KEY)
         const clientOrigin = process.env.CLIENT_URL?.split(",")[0]?.trim() || req.headers.origin
         if (!clientOrigin) {
+            await releaseUnpaidOrder(order.id)
             return res.status(500).json({message:"Client URL is not configured"})
         }
-        // create session
-        const session = await stripe.checkout.sessions.create({
+        try{
+          const session = await stripe.checkout.sessions.create({
             success_url: `${clientOrigin}/orders?session_id={CHECKOUT_SESSION_ID}&clearCart=true`,
             cancel_url: `${clientOrigin}/checkout`,
             payment_method_types: [paymentMethod === "upi" ? "upi" : "card"],
@@ -113,18 +152,14 @@ export const createOrder = async (req: Request, res: Response) => {
                 },
             ],
             mode: 'payment',
-            metadata:{orderId:order.id}
-        });
-        return res.json({url:session.url})
-    }
-    res.json({ order })
-
-    //Decrease stock
-    for (const item of orderItems) {
-        await prisma.product.update({
-            where: { id: item.product },
-            data: { stock: { decrement: item.quantity } }
-        })
+            metadata:{orderId:order.id,userId:req.user!.id},
+            expires_at:Math.floor(Date.now()/1000)+(30*60),
+          });
+          return res.json({url:session.url})
+        }catch(error){
+          await releaseUnpaidOrder(order.id)
+          throw error
+        }
     }
 
     // Send stock update events for each product in the order
@@ -133,6 +168,7 @@ export const createOrder = async (req: Request, res: Response) => {
     }
 
     await inngest.send({ name: "order/placed", data: { orderId: order.id } })
+    res.status(201).json({ order })
 }
 
 // Get user's orders
@@ -194,11 +230,14 @@ export const confirmOrderPayment = async (req: Request, res: Response) => {
 // PUT /api/orders/:id/status
 export const updateOrderStatus = async (req: Request, res: Response) => {
     const { status, note } = req.body
+    if(!isOrderStatus(status)) return res.status(400).json({message:"Invalid order status"})
     const order = await prisma.order.findUnique({ where: { id: req.params.id as string } })
 
     if (!order) {
         return res.status(404).json({ message: "Order not found" })
     }
+    if(!canTransitionOrder(order.status,status))
+        return res.status(409).json({message:`Order cannot move from ${order.status} to ${status}`})
     const history = (Array.isArray(order.statusHistory) ? order.statusHistory : []) as any[]
     history.push({ status, note: note || `Order ${status.toLowerCase()}`, timestamp: new Date() })
 

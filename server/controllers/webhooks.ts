@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import Stripe from "stripe";
-import { prisma } from "../config/prisma.js";
-import { fulfillPaidOrder } from "../services/orderPayment.js";
+import { fulfillPaidOrder, releaseUnpaidOrder } from "../services/orderPayment.js";
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -45,11 +44,12 @@ export const stripeWebhook = async (request: Request, response: Response) => {
             break;
         }
 
-        case "checkout.session.async_payment_failed": {
+        case "checkout.session.async_payment_failed":
+        case "checkout.session.expired": {
             const session = event.data.object as Stripe.Checkout.Session;
             const failureOrderId = session.metadata?.orderId;
             if (failureOrderId) {
-                await prisma.order.deleteMany({where:{id:failureOrderId, isPaid:false}});
+                await releaseUnpaidOrder(failureOrderId);
             }
             break;
         }

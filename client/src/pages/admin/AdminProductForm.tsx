@@ -5,6 +5,7 @@ import { categoriesData } from "../../assets/assets";
 import Loading from "../../components/Loading";
 import api from "../../config/api";
 import toast from "react-hot-toast";
+import { getErrorMessage } from "../../utils/errors";
 // import type { Product } from "../../types";
 
 // const products = dummyProducts as Product[];
@@ -50,8 +51,8 @@ export default function AdminProductForm() {
                         isOrganic:p.isOrganic
                     })
             }
-            } catch (error:any) {
-                toast.error(error.response?.data?.message || "Failed to load data")
+            } catch (error:unknown) {
+                toast.error(getErrorMessage(error,"Failed to load data"))
                 
             }finally{
                 setLoading(false)
@@ -92,8 +93,8 @@ export default function AdminProductForm() {
                 toast.success("Product created successfully")
             }
             navigate('/admin/products')
-        } catch(error:any){
-            toast.error(error.response?.data?.message || "Failed to save product")
+        } catch(error:unknown){
+            toast.error(getErrorMessage(error,"Failed to save product"))
         } finally{
             setSaving(false)
         }

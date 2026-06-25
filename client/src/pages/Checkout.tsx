@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useCart } from "../context/CartContext"
 import type { Address } from "../types"
@@ -9,6 +9,7 @@ import CheckoutReview from "../components/Checkout/CheckoutReview"
 import api from "../config/api"
 import toast from "react-hot-toast"
 import { useAuth } from "../context/AuthContext"
+import { getErrorMessage } from "../utils/errors"
 
 
 const Checkout = () => {
@@ -66,8 +67,8 @@ const Checkout = () => {
       toast.success("Order placed successfully!")
       navigate(`/orders/${data.order.id}`)
 
-    }catch(error:any){
-      toast.error(error.response?.data?.message || error.message)
+    }catch(error:unknown){
+      toast.error(getErrorMessage(error,"Unable to place order"))
     }finally{
       setLoading(false)
       scrollTo(0,0)
@@ -76,7 +77,7 @@ const Checkout = () => {
 
   //Populate address from user's default address
 
-  useState(() => {
+  useEffect(() => {
     if (user?.addresses?.length) {
       const defaultAddr = user.addresses.find((a) => a.isDefault) || user.addresses[0]
       setAddress({
@@ -91,7 +92,7 @@ const Checkout = () => {
         lng: defaultAddr?.lng,
       })
     }
-  })
+  }, [user])
 
   if(items.length===0){
     return(

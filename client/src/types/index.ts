@@ -6,6 +6,8 @@ export interface User {
     avatar: string;
     addresses: Address[];
     isAdmin?: boolean;
+    role?: "CUSTOMER" | "ADMIN";
+    emailVerifiedAt?: string | null;
     createdAt: string;
     updatedAt: string;
 }
@@ -87,4 +89,8 @@ export interface Order {
     liveLocation?: { lat: number; lng: number; updatedAt?: string; isSharing?: boolean } | null;
     isPaid: boolean;
     createdAt: string;
+}
+
+export type AdminOrder = Omit<Order,"user"> & {
+    user?: {id?:string;name:string;email:string;phone?:string}
 }

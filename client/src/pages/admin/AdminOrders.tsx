@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
 import { TruckIcon } from "lucide-react";
 import toast from "react-hot-toast";
-import type { DeliveryPartner } from "../../types";
+import type { AdminOrder, DeliveryPartner } from "../../types";
 import Loading from "../../components/Loading";
 import api from "../../config/api";
+import { getErrorMessage } from "../../utils/errors";
 
 export default function AdminOrders() {
 
     const currency = import.meta.env.VITE_CURRENCY_SYMBOL || "₹";
 
-    const [orders, setOrders] = useState<any[]>([]);
+    const [orders, setOrders] = useState<AdminOrder[]>([]);
     const [partners, setPartners] = useState<DeliveryPartner[]>([]);
     const [loading, setLoading] = useState(true);
     const [assignModal, setAssignModal] = useState<string | null>(null);
@@ -19,8 +20,8 @@ export default function AdminOrders() {
         try {
             const {data}=await api.get("/orders/all")
             setOrders(Array.isArray(data.orders) ? data.orders : [])
-        } catch (error:any) {
-            toast.error(error.response?.data?.message || "Failed to load orders")
+        } catch (error:unknown) {
+            toast.error(getErrorMessage(error,"Failed to load orders"))
         }finally{
             setLoading(false)
         }
@@ -30,8 +31,8 @@ export default function AdminOrders() {
         try {
             const {data}=await api.get("/admin/delivery-partners")
             setPartners(Array.isArray(data.partners) ? data.partners.filter((p:DeliveryPartner)=>p.isActive) : [])
-        } catch {
-            
+        } catch (error:unknown) {
+            toast.error(getErrorMessage(error,"Failed to load delivery partners"))
         }
     };
 
@@ -45,8 +46,8 @@ export default function AdminOrders() {
            await api.put(`/orders/${id}/status`,{status:newStatus}) 
            toast.success("Order status updated")
            fetchOrders()
-        } catch (error:any) {
-            toast.error(error.response?.data?.message || "Failed to update status")
+        } catch (error:unknown) {
+            toast.error(getErrorMessage(error,"Failed to update status"))
         }
     };
 
@@ -58,13 +59,13 @@ export default function AdminOrders() {
             setAssignModal(null)
             setSelectedPartner("")
             fetchOrders()
-        } catch (error:any) {
-            toast.error(error?.response?.data?.message || "Failed")
+        } catch (error:unknown) {
+            toast.error(getErrorMessage(error,"Failed to assign delivery partner"))
         }
     };
 
     const statusOptions = ["Placed", "Confirmed", "Assigned", "Packed", "Out for Delivery", "Delivered", "Cancelled"];
-    const statusColors: any = {
+    const statusColors: Record<string,string> = {
         Placed: "bg-blue-100 text-blue-800",
         Confirmed: "bg-amber-100 text-amber-800",
         Assigned: "bg-indigo-100 text-indigo-800",
@@ -99,7 +100,7 @@ export default function AdminOrders() {
                                     <td colSpan={5} className="px-6 py-8 text-center text-zinc-500">No orders found.</td>
                                 </tr>
                             ) : (
-                                orders.map((order: any) => (
+                                orders.map((order) => (
                                     <tr key={order.id} className="hover:bg-zinc-50/50 transition-colors">
                                         <td className="px-6 py-4">
                                             <p className="font-semibold text-zinc-900">#{String(order.id || "").slice(-6)}</p>

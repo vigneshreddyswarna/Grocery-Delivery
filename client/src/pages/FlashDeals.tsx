@@ -5,6 +5,7 @@ import Loading from "../components/Loading"
 import ProductCard from "../components/ProductCard"
 import api from "../config/api"
 import toast from "react-hot-toast"
+import { getErrorMessage } from "../utils/errors"
 import { normalizeProducts } from "../utils/product"
 
 
@@ -13,7 +14,7 @@ const FlashDeals = () => {
   const [loading, setLoading]= useState(true)
 
   useEffect(()=>{
-    api.get("/products/flash-deals").then((res)=>setProducts(normalizeProducts(res.data.products))).catch((error:any)=>toast.error(error.response?.data?.message || error?.message || "Failed to load flash deals")).finally(()=> setLoading(false))
+    api.get("/products/flash-deals").then((res)=>setProducts(normalizeProducts(res.data.products))).catch((error:unknown)=>toast.error(getErrorMessage(error,"Failed to load flash deals"))).finally(()=> setLoading(false))
   },[])
   return (
     <div className="min-h-screen bg-app-cream">

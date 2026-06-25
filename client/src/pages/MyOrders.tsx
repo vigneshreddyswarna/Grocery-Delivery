@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Link, useSearchParams } from "react-router-dom"
 import type { Order } from "../types"
 import { useCart } from "../context/CartContext"
@@ -6,6 +6,7 @@ import { statusColors } from "../assets/assets"
 import Loading from "../components/Loading"
 import { CalendarIcon, ChevronRightIcon, PackageIcon } from "lucide-react"
 import api from "../config/api"
+import { getErrorMessage } from "../utils/errors"
 import toast from "react-hot-toast"
 
 
@@ -21,19 +22,19 @@ const MyOrders = () => {
 
   const {clearCart}=useCart()
 
-  const fetchOrders = async()=>{
+  const fetchOrders = useCallback(async()=>{
     setLoading(true)
     try {
       const params=activeTab !=="all" ? `?status=${activeTab}` : ""
       const {data}=await api.get(`/orders${params}`)
       setOrders(Array.isArray(data.orders) ? data.orders : [])
-    } catch (error:any) {
-      toast.error(error.response?.data?.message || error?.message)
+    } catch (error:unknown) {
+      toast.error(getErrorMessage(error,"Unable to load orders"))
       
     }finally{
       setLoading(false)
     }
-  }
+  },[activeTab])
 
   useEffect(()=>{
     const sessionId = searchParams.get("session_id")
@@ -58,8 +59,8 @@ const MyOrders = () => {
         }
         toast.error("Payment is still processing. Refresh orders shortly.")
         await fetchOrders()
-      }catch(error:any){
-        toast.error(error.response?.data?.message || error?.message || "Unable to confirm payment")
+      }catch(error:unknown){
+        toast.error(getErrorMessage(error,"Unable to confirm payment"))
       }finally{
         setLoading(false)
       }
@@ -68,7 +69,7 @@ const MyOrders = () => {
     void confirmPayment()
   
 
-  },[activeTab])
+  },[clearCart,fetchOrders,searchParams,setSearchParams])
   return (
     <div className="min-h-screen bg-app-cream mb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

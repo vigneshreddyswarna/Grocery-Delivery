@@ -1,11 +1,13 @@
 import { ClockIcon, CheckIcon, TruckIcon, PackageIcon } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import type { Order } from "../../types";
 
-export default function OrderTimeLine({ order }: { order: any }) {
+export default function OrderTimeLine({ order }: { order: Order }) {
 
     const allStatuses = ["Placed", "Confirmed", "Assigned", "Packed", "Out for Delivery", "Delivered"];
     const currentIdx = allStatuses.indexOf(order.status);
 
-    const statusIcons: any = {
+    const statusIcons: Record<string,LucideIcon> = {
         Placed: ClockIcon,
         Confirmed: CheckIcon,
         Assigned: TruckIcon,
@@ -23,7 +25,7 @@ export default function OrderTimeLine({ order }: { order: any }) {
                     const isCompleted = i <= currentIdx;
                     const isCurrent = i === currentIdx;
 
-                    const historyEntry = order.statusHistory.find((h: any) => h.status === status);
+                    const historyEntry = order.statusHistory.find((entry) => entry.status === status);
 
                     return (
                         <div key={status} className="flex gap-4">

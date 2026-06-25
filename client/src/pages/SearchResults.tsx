@@ -6,6 +6,7 @@ import ProductCard from "../components/ProductCard"
 import type { Product } from "../types"
 import api from "../config/api"
 import toast from "react-hot-toast"
+import { getErrorMessage } from "../utils/errors"
 import { normalizeProducts } from "../utils/product"
 
 
@@ -23,7 +24,7 @@ const SearchResults = () => {
       return
     }
     setLoading(true)
-    api.get(`/products?search=${encodeURIComponent(query)}`).then((res)=>setProducts(normalizeProducts(res.data.products))).catch((error:any)=>{toast.error(error.response?.data?.message || error.message || "Search failed")}).finally(()=>setLoading(false))
+    api.get(`/products?search=${encodeURIComponent(query)}`).then((res)=>setProducts(normalizeProducts(res.data.products))).catch((error:unknown)=>{toast.error(getErrorMessage(error,"Search failed"))}).finally(()=>setLoading(false))
 
   },[query])
   return (

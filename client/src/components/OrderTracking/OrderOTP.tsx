@@ -1,6 +1,7 @@
 import { KeyRoundIcon } from 'lucide-react'
+import type { Order } from '../../types'
 
-export default function OrderOTP({ order }: { order: any }) {
+export default function OrderOTP({ order }: { order: Order }) {
     const showOtp = order.deliveryOtp && ["Assigned", "Packed", "Out for Delivery"].includes(order.status);
     if (!showOtp) return null;
     return (

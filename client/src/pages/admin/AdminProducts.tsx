@@ -6,6 +6,7 @@ import Loading from "../../components/Loading";
 import api from "../../config/api";
 import toast from "react-hot-toast";
 import { normalizeProducts } from "../../utils/product";
+import { getErrorMessage } from "../../utils/errors";
 
 export default function AdminProducts() {
 
@@ -18,8 +19,8 @@ export default function AdminProducts() {
         try {
             const {data}=await api.get("/products")
             setProducts(normalizeProducts(data.products))
-        } catch (error:any) {
-            toast.error(error.response?.data?.message || error?.message)
+        } catch (error:unknown) {
+            toast.error(getErrorMessage(error,"Failed to load products"))
         }finally{
             setLoading(false)
         }
@@ -39,8 +40,8 @@ export default function AdminProducts() {
                 )
             )
             toast.success("Product marked as out of stock")
-        } catch (error:any) {
-            toast.error(error.response?.data?.message || "Failed to update product")
+        } catch (error:unknown) {
+            toast.error(getErrorMessage(error,"Failed to update product"))
             
         }
     };
@@ -52,8 +53,8 @@ export default function AdminProducts() {
             await api.delete(`/products/${id}`)
             setProducts((currentProducts) => currentProducts.filter((product) => product.id !== id))
             toast.success("Product deleted permanently")
-        } catch (error:any) {
-            toast.error(error.response?.data?.message || "Failed to delete product")
+        } catch (error:unknown) {
+            toast.error(getErrorMessage(error,"Failed to delete product"))
         }
     };
 

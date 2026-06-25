@@ -33,6 +33,7 @@ export type DeliveryPartnerMinAggregateOutputType = {
   avatar: string | null
   vehicleType: string | null
   isActive: boolean | null
+  emailVerifiedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -46,6 +47,7 @@ export type DeliveryPartnerMaxAggregateOutputType = {
   avatar: string | null
   vehicleType: string | null
   isActive: boolean | null
+  emailVerifiedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -59,6 +61,7 @@ export type DeliveryPartnerCountAggregateOutputType = {
   avatar: number
   vehicleType: number
   isActive: number
+  emailVerifiedAt: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -74,6 +77,7 @@ export type DeliveryPartnerMinAggregateInputType = {
   avatar?: true
   vehicleType?: true
   isActive?: true
+  emailVerifiedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -87,6 +91,7 @@ export type DeliveryPartnerMaxAggregateInputType = {
   avatar?: true
   vehicleType?: true
   isActive?: true
+  emailVerifiedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -100,6 +105,7 @@ export type DeliveryPartnerCountAggregateInputType = {
   avatar?: true
   vehicleType?: true
   isActive?: true
+  emailVerifiedAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -186,6 +192,7 @@ export type DeliveryPartnerGroupByOutputType = {
   avatar: string | null
   vehicleType: string | null
   isActive: boolean | null
+  emailVerifiedAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: DeliveryPartnerCountAggregateOutputType | null
@@ -220,9 +227,11 @@ export type DeliveryPartnerWhereInput = {
   avatar?: Prisma.StringNullableFilter<"DeliveryPartner"> | string | null
   vehicleType?: Prisma.StringNullableFilter<"DeliveryPartner"> | string | null
   isActive?: Prisma.BoolNullableFilter<"DeliveryPartner"> | boolean | null
+  emailVerifiedAt?: Prisma.DateTimeNullableFilter<"DeliveryPartner"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"DeliveryPartner"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DeliveryPartner"> | Date | string
   orders?: Prisma.OrderListRelationFilter
+  authTokens?: Prisma.AuthTokenListRelationFilter
 }
 
 export type DeliveryPartnerOrderByWithRelationInput = {
@@ -234,9 +243,11 @@ export type DeliveryPartnerOrderByWithRelationInput = {
   avatar?: Prisma.SortOrderInput | Prisma.SortOrder
   vehicleType?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrderInput | Prisma.SortOrder
+  emailVerifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   orders?: Prisma.OrderOrderByRelationAggregateInput
+  authTokens?: Prisma.AuthTokenOrderByRelationAggregateInput
 }
 
 export type DeliveryPartnerWhereUniqueInput = Prisma.AtLeast<{
@@ -251,9 +262,11 @@ export type DeliveryPartnerWhereUniqueInput = Prisma.AtLeast<{
   avatar?: Prisma.StringNullableFilter<"DeliveryPartner"> | string | null
   vehicleType?: Prisma.StringNullableFilter<"DeliveryPartner"> | string | null
   isActive?: Prisma.BoolNullableFilter<"DeliveryPartner"> | boolean | null
+  emailVerifiedAt?: Prisma.DateTimeNullableFilter<"DeliveryPartner"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"DeliveryPartner"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"DeliveryPartner"> | Date | string
   orders?: Prisma.OrderListRelationFilter
+  authTokens?: Prisma.AuthTokenListRelationFilter
 }, "id" | "email">
 
 export type DeliveryPartnerOrderByWithAggregationInput = {
@@ -265,6 +278,7 @@ export type DeliveryPartnerOrderByWithAggregationInput = {
   avatar?: Prisma.SortOrderInput | Prisma.SortOrder
   vehicleType?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrderInput | Prisma.SortOrder
+  emailVerifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.DeliveryPartnerCountOrderByAggregateInput
@@ -284,6 +298,7 @@ export type DeliveryPartnerScalarWhereWithAggregatesInput = {
   avatar?: Prisma.StringNullableWithAggregatesFilter<"DeliveryPartner"> | string | null
   vehicleType?: Prisma.StringNullableWithAggregatesFilter<"DeliveryPartner"> | string | null
   isActive?: Prisma.BoolNullableWithAggregatesFilter<"DeliveryPartner"> | boolean | null
+  emailVerifiedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"DeliveryPartner"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"DeliveryPartner"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"DeliveryPartner"> | Date | string
 }
@@ -297,9 +312,11 @@ export type DeliveryPartnerCreateInput = {
   avatar?: string | null
   vehicleType?: string | null
   isActive?: boolean | null
+  emailVerifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   orders?: Prisma.OrderCreateNestedManyWithoutDeliveryPartnerInput
+  authTokens?: Prisma.AuthTokenCreateNestedManyWithoutDeliveryPartnerInput
 }
 
 export type DeliveryPartnerUncheckedCreateInput = {
@@ -311,9 +328,11 @@ export type DeliveryPartnerUncheckedCreateInput = {
   avatar?: string | null
   vehicleType?: string | null
   isActive?: boolean | null
+  emailVerifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutDeliveryPartnerInput
+  authTokens?: Prisma.AuthTokenUncheckedCreateNestedManyWithoutDeliveryPartnerInput
 }
 
 export type DeliveryPartnerUpdateInput = {
@@ -325,9 +344,11 @@ export type DeliveryPartnerUpdateInput = {
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicleType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orders?: Prisma.OrderUpdateManyWithoutDeliveryPartnerNestedInput
+  authTokens?: Prisma.AuthTokenUpdateManyWithoutDeliveryPartnerNestedInput
 }
 
 export type DeliveryPartnerUncheckedUpdateInput = {
@@ -339,9 +360,11 @@ export type DeliveryPartnerUncheckedUpdateInput = {
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicleType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orders?: Prisma.OrderUncheckedUpdateManyWithoutDeliveryPartnerNestedInput
+  authTokens?: Prisma.AuthTokenUncheckedUpdateManyWithoutDeliveryPartnerNestedInput
 }
 
 export type DeliveryPartnerCreateManyInput = {
@@ -353,6 +376,7 @@ export type DeliveryPartnerCreateManyInput = {
   avatar?: string | null
   vehicleType?: string | null
   isActive?: boolean | null
+  emailVerifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -366,6 +390,7 @@ export type DeliveryPartnerUpdateManyMutationInput = {
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicleType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -379,6 +404,7 @@ export type DeliveryPartnerUncheckedUpdateManyInput = {
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicleType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -397,6 +423,7 @@ export type DeliveryPartnerCountOrderByAggregateInput = {
   avatar?: Prisma.SortOrder
   vehicleType?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  emailVerifiedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -410,6 +437,7 @@ export type DeliveryPartnerMaxOrderByAggregateInput = {
   avatar?: Prisma.SortOrder
   vehicleType?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  emailVerifiedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -423,6 +451,7 @@ export type DeliveryPartnerMinOrderByAggregateInput = {
   avatar?: Prisma.SortOrder
   vehicleType?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  emailVerifiedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -443,6 +472,22 @@ export type DeliveryPartnerUpdateOneWithoutOrdersNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.DeliveryPartnerUpdateToOneWithWhereWithoutOrdersInput, Prisma.DeliveryPartnerUpdateWithoutOrdersInput>, Prisma.DeliveryPartnerUncheckedUpdateWithoutOrdersInput>
 }
 
+export type DeliveryPartnerCreateNestedOneWithoutAuthTokensInput = {
+  create?: Prisma.XOR<Prisma.DeliveryPartnerCreateWithoutAuthTokensInput, Prisma.DeliveryPartnerUncheckedCreateWithoutAuthTokensInput>
+  connectOrCreate?: Prisma.DeliveryPartnerCreateOrConnectWithoutAuthTokensInput
+  connect?: Prisma.DeliveryPartnerWhereUniqueInput
+}
+
+export type DeliveryPartnerUpdateOneWithoutAuthTokensNestedInput = {
+  create?: Prisma.XOR<Prisma.DeliveryPartnerCreateWithoutAuthTokensInput, Prisma.DeliveryPartnerUncheckedCreateWithoutAuthTokensInput>
+  connectOrCreate?: Prisma.DeliveryPartnerCreateOrConnectWithoutAuthTokensInput
+  upsert?: Prisma.DeliveryPartnerUpsertWithoutAuthTokensInput
+  disconnect?: Prisma.DeliveryPartnerWhereInput | boolean
+  delete?: Prisma.DeliveryPartnerWhereInput | boolean
+  connect?: Prisma.DeliveryPartnerWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.DeliveryPartnerUpdateToOneWithWhereWithoutAuthTokensInput, Prisma.DeliveryPartnerUpdateWithoutAuthTokensInput>, Prisma.DeliveryPartnerUncheckedUpdateWithoutAuthTokensInput>
+}
+
 export type DeliveryPartnerCreateWithoutOrdersInput = {
   id?: string
   name: string
@@ -452,8 +497,10 @@ export type DeliveryPartnerCreateWithoutOrdersInput = {
   avatar?: string | null
   vehicleType?: string | null
   isActive?: boolean | null
+  emailVerifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  authTokens?: Prisma.AuthTokenCreateNestedManyWithoutDeliveryPartnerInput
 }
 
 export type DeliveryPartnerUncheckedCreateWithoutOrdersInput = {
@@ -465,8 +512,10 @@ export type DeliveryPartnerUncheckedCreateWithoutOrdersInput = {
   avatar?: string | null
   vehicleType?: string | null
   isActive?: boolean | null
+  emailVerifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  authTokens?: Prisma.AuthTokenUncheckedCreateNestedManyWithoutDeliveryPartnerInput
 }
 
 export type DeliveryPartnerCreateOrConnectWithoutOrdersInput = {
@@ -494,8 +543,10 @@ export type DeliveryPartnerUpdateWithoutOrdersInput = {
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicleType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  authTokens?: Prisma.AuthTokenUpdateManyWithoutDeliveryPartnerNestedInput
 }
 
 export type DeliveryPartnerUncheckedUpdateWithoutOrdersInput = {
@@ -507,8 +558,86 @@ export type DeliveryPartnerUncheckedUpdateWithoutOrdersInput = {
   avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   vehicleType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  authTokens?: Prisma.AuthTokenUncheckedUpdateManyWithoutDeliveryPartnerNestedInput
+}
+
+export type DeliveryPartnerCreateWithoutAuthTokensInput = {
+  id?: string
+  name: string
+  email: string
+  password: string
+  phone: string
+  avatar?: string | null
+  vehicleType?: string | null
+  isActive?: boolean | null
+  emailVerifiedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  orders?: Prisma.OrderCreateNestedManyWithoutDeliveryPartnerInput
+}
+
+export type DeliveryPartnerUncheckedCreateWithoutAuthTokensInput = {
+  id?: string
+  name: string
+  email: string
+  password: string
+  phone: string
+  avatar?: string | null
+  vehicleType?: string | null
+  isActive?: boolean | null
+  emailVerifiedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutDeliveryPartnerInput
+}
+
+export type DeliveryPartnerCreateOrConnectWithoutAuthTokensInput = {
+  where: Prisma.DeliveryPartnerWhereUniqueInput
+  create: Prisma.XOR<Prisma.DeliveryPartnerCreateWithoutAuthTokensInput, Prisma.DeliveryPartnerUncheckedCreateWithoutAuthTokensInput>
+}
+
+export type DeliveryPartnerUpsertWithoutAuthTokensInput = {
+  update: Prisma.XOR<Prisma.DeliveryPartnerUpdateWithoutAuthTokensInput, Prisma.DeliveryPartnerUncheckedUpdateWithoutAuthTokensInput>
+  create: Prisma.XOR<Prisma.DeliveryPartnerCreateWithoutAuthTokensInput, Prisma.DeliveryPartnerUncheckedCreateWithoutAuthTokensInput>
+  where?: Prisma.DeliveryPartnerWhereInput
+}
+
+export type DeliveryPartnerUpdateToOneWithWhereWithoutAuthTokensInput = {
+  where?: Prisma.DeliveryPartnerWhereInput
+  data: Prisma.XOR<Prisma.DeliveryPartnerUpdateWithoutAuthTokensInput, Prisma.DeliveryPartnerUncheckedUpdateWithoutAuthTokensInput>
+}
+
+export type DeliveryPartnerUpdateWithoutAuthTokensInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicleType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orders?: Prisma.OrderUpdateManyWithoutDeliveryPartnerNestedInput
+}
+
+export type DeliveryPartnerUncheckedUpdateWithoutAuthTokensInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vehicleType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.NullableBoolFieldUpdateOperationsInput | boolean | null
+  emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutDeliveryPartnerNestedInput
 }
 
 
@@ -518,10 +647,12 @@ export type DeliveryPartnerUncheckedUpdateWithoutOrdersInput = {
 
 export type DeliveryPartnerCountOutputType = {
   orders: number
+  authTokens: number
 }
 
 export type DeliveryPartnerCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   orders?: boolean | DeliveryPartnerCountOutputTypeCountOrdersArgs
+  authTokens?: boolean | DeliveryPartnerCountOutputTypeCountAuthTokensArgs
 }
 
 /**
@@ -541,6 +672,13 @@ export type DeliveryPartnerCountOutputTypeCountOrdersArgs<ExtArgs extends runtim
   where?: Prisma.OrderWhereInput
 }
 
+/**
+ * DeliveryPartnerCountOutputType without action
+ */
+export type DeliveryPartnerCountOutputTypeCountAuthTokensArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AuthTokenWhereInput
+}
+
 
 export type DeliveryPartnerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -551,9 +689,11 @@ export type DeliveryPartnerSelect<ExtArgs extends runtime.Types.Extensions.Inter
   avatar?: boolean
   vehicleType?: boolean
   isActive?: boolean
+  emailVerifiedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   orders?: boolean | Prisma.DeliveryPartner$ordersArgs<ExtArgs>
+  authTokens?: boolean | Prisma.DeliveryPartner$authTokensArgs<ExtArgs>
   _count?: boolean | Prisma.DeliveryPartnerCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["deliveryPartner"]>
 
@@ -566,6 +706,7 @@ export type DeliveryPartnerSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   avatar?: boolean
   vehicleType?: boolean
   isActive?: boolean
+  emailVerifiedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["deliveryPartner"]>
@@ -579,6 +720,7 @@ export type DeliveryPartnerSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   avatar?: boolean
   vehicleType?: boolean
   isActive?: boolean
+  emailVerifiedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["deliveryPartner"]>
@@ -592,13 +734,15 @@ export type DeliveryPartnerSelectScalar = {
   avatar?: boolean
   vehicleType?: boolean
   isActive?: boolean
+  emailVerifiedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type DeliveryPartnerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "phone" | "avatar" | "vehicleType" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["deliveryPartner"]>
+export type DeliveryPartnerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "phone" | "avatar" | "vehicleType" | "isActive" | "emailVerifiedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["deliveryPartner"]>
 export type DeliveryPartnerInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   orders?: boolean | Prisma.DeliveryPartner$ordersArgs<ExtArgs>
+  authTokens?: boolean | Prisma.DeliveryPartner$authTokensArgs<ExtArgs>
   _count?: boolean | Prisma.DeliveryPartnerCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type DeliveryPartnerIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -608,6 +752,7 @@ export type $DeliveryPartnerPayload<ExtArgs extends runtime.Types.Extensions.Int
   name: "DeliveryPartner"
   objects: {
     orders: Prisma.$OrderPayload<ExtArgs>[]
+    authTokens: Prisma.$AuthTokenPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -618,6 +763,7 @@ export type $DeliveryPartnerPayload<ExtArgs extends runtime.Types.Extensions.Int
     avatar: string | null
     vehicleType: string | null
     isActive: boolean | null
+    emailVerifiedAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["deliveryPartner"]>
@@ -1015,6 +1161,7 @@ readonly fields: DeliveryPartnerFieldRefs;
 export interface Prisma__DeliveryPartnerClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   orders<T extends Prisma.DeliveryPartner$ordersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DeliveryPartner$ordersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  authTokens<T extends Prisma.DeliveryPartner$authTokensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DeliveryPartner$authTokensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AuthTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1052,6 +1199,7 @@ export interface DeliveryPartnerFieldRefs {
   readonly avatar: Prisma.FieldRef<"DeliveryPartner", 'String'>
   readonly vehicleType: Prisma.FieldRef<"DeliveryPartner", 'String'>
   readonly isActive: Prisma.FieldRef<"DeliveryPartner", 'Boolean'>
+  readonly emailVerifiedAt: Prisma.FieldRef<"DeliveryPartner", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"DeliveryPartner", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"DeliveryPartner", 'DateTime'>
 }
@@ -1468,6 +1616,30 @@ export type DeliveryPartner$ordersArgs<ExtArgs extends runtime.Types.Extensions.
   take?: number
   skip?: number
   distinct?: Prisma.OrderScalarFieldEnum | Prisma.OrderScalarFieldEnum[]
+}
+
+/**
+ * DeliveryPartner.authTokens
+ */
+export type DeliveryPartner$authTokensArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AuthToken
+   */
+  select?: Prisma.AuthTokenSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AuthToken
+   */
+  omit?: Prisma.AuthTokenOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AuthTokenInclude<ExtArgs> | null
+  where?: Prisma.AuthTokenWhereInput
+  orderBy?: Prisma.AuthTokenOrderByWithRelationInput | Prisma.AuthTokenOrderByWithRelationInput[]
+  cursor?: Prisma.AuthTokenWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AuthTokenScalarFieldEnum | Prisma.AuthTokenScalarFieldEnum[]
 }
 
 /**

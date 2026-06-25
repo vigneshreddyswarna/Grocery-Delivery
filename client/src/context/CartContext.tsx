@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react"
 import type { CartItem, Product } from "../types"
 import { getProductId, normalizeProduct } from "../utils/product"
 import { getStoredValue, removeStoredValue, setStoredValue } from "../utils/storage"
@@ -76,10 +76,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
         )
     }
 
-    const clearCart = () => {
+    const clearCart = useCallback(() => {
         setItems([])
         setIsCartOpen(false)
-    }
+    },[])
 
     const cartCount = items.reduce((sum, item) => sum + item.quantity, 0)
     const cartTotal = items.reduce((sum, item) => sum + normalizeProduct(item.product).price * item.quantity, 0)

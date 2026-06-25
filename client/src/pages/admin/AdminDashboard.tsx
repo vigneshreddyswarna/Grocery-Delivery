@@ -4,13 +4,14 @@ import { PackageIcon, UsersIcon, ShoppingBagIcon, AlertTriangleIcon } from "luci
 import Loading from "../../components/Loading";
 import { statusColors } from "../../assets/assets";
 import api from "../../config/api";
+import type { AdminOrder } from "../../types";
 
 interface Stats {
     totalOrders: number;
     totalUsers: number;
     totalProducts: number;
     outOfStock: number;
-    recentOrders: any[];
+    recentOrders: AdminOrder[];
 }
 
 export default function AdminDashboard() {
@@ -90,7 +91,7 @@ export default function AdminDashboard() {
                                     <td colSpan={6} className="px-6 py-8 text-center text-zinc-500">No orders yet.</td>
                                 </tr>
                             ) : (
-                                stats?.recentOrders.map((order: any) => (
+                                stats?.recentOrders.map((order) => (
                                     <tr key={order.id} className="hover:bg-zinc-50/50 transition-colors">
                                         <td className="px-6 py-4 font-mono text-xs text-zinc-500">#{String(order.id || "").slice(-6).toUpperCase()}</td>
                                         <td className="px-6 py-4">

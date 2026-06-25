@@ -17,7 +17,7 @@ const AddressCard = ({ addr, onEditHandler, setAddresses }: AddressCardProps) =>
     const { updateUser } = useAuth()
     
     // Safely capture the correct unique identifier key string from database document
-    const activeAddressId = addr.id || (addr as any)._id;
+    const activeAddressId = addr.id;
 
     const handleDelete = async (id: string) => {
         try {
@@ -32,8 +32,9 @@ const AddressCard = ({ addr, onEditHandler, setAddresses }: AddressCardProps) =>
             setAddresses(updatedAddresses)
             if (updateUser) updateUser({ addresses: updatedAddresses })
             toast.success('Address removed')
-        } catch (error: any) {
-            toast.error(error.response?.data?.message || error?.message || "Failed to remove address")
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : "Failed to remove address"
+            toast.error(message)
         }
     }
 

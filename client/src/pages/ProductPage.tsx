@@ -29,13 +29,13 @@ const ProductPage = () => {
     
     // Fixed: Accounted for typical axios `.data` wrapping structures cleanly
     api.get(`/products/${id}`)
-      .then((res: any) => {
-        const productData = normalizeProduct(res.data?.product || res.product || res.data || {})
+      .then((res) => {
+        const productData = normalizeProduct(res.data?.product || res.data || {})
         setProduct(productData)
         return api.get(`/products?category=${encodeURIComponent(productData.category)}`)
       })
-      .then((res: any) => {
-        const productsList = normalizeProducts(res.data?.products || res.products || res.data)
+      .then((res) => {
+        const productsList = normalizeProducts(res.data?.products || res.data)
         // Adjusted comparison matcher to fallback gracefully regardless of if payload uses ._id or .id
         setRelatedProducts(productsList.filter((p: Product) => getProductId(p) !== id))
       })

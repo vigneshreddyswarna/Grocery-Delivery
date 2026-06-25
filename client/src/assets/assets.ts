@@ -1,17 +1,17 @@
 import { TruckIcon, LeafIcon, ClockIcon, ShieldCheckIcon, MapPinIcon, PhoneIcon, MailIcon } from "lucide-react";
 import { SiFacebook, SiX, SiInstagram } from "@icons-pack/react-simple-icons";
-import hero_bg from "./hero_bg.jpeg";
+import hero_bg from "./hero_bg.webp";
 import delivery_truck from "./delivery_truck.svg";
-import fruits_vegetables from "./fruits_vegetables.png";
-import dairy_eggs from "./dairy_eggs.png";
-import bakery from "./bakery.png";
-import drinks from "./drinks.png";
-import pantry_staples from "./pantry_staples.png";
-import snacks from "./snacks.png";
-import frozen_foods from "./frozen_foods.png";
-import personal_care from "./personal_care.png";
-import baby_care from "./baby_care.png";
-import meat_seafood from "./meat_seafood.png";
+import fruits_vegetables from "./fruits_vegetables.webp";
+import dairy_eggs from "./dairy_eggs.webp";
+import bakery from "./bakery.webp";
+import drinks from "./drinks.webp";
+import pantry_staples from "./pantry_staples.webp";
+import snacks from "./snacks.webp";
+import frozen_foods from "./frozen_foods.webp";
+import personal_care from "./personal_care.webp";
+import baby_care from "./baby_care.webp";
+import meat_seafood from "./meat_seafood.webp";
 
 export const assets = {
     delivery_truck,
@@ -46,12 +46,12 @@ export const deliveryPartnerLoginImage = "https://images.unsplash.com/photo-1610
 
 export const appPromoBannerData = {
     title: "Get fresh groceries in minutes",
-    description: "Download the Instacart app for exclusive deals, real-time tracking, and the freshest selection delivered right to your door.",
+    description: "Download FreshCart for exclusive deals, real-time tracking, and fresh groceries delivered to your door.",
 };
 
 export const footerData = {
     brand: {
-        name: "Instacart",
+        name: "FreshCart",
         description: "Bringing fresh, organic groceries straight from local farms to your doorstep. Nourish your home with Earth's finest.",
         socials: [
             { icon: SiFacebook, link: "#" },

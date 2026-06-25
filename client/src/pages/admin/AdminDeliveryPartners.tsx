@@ -4,6 +4,9 @@ import type { DeliveryPartner } from "../../types";
 import Loading from "../../components/Loading";
 import api from "../../config/api";
 import toast from "react-hot-toast";
+import { getErrorMessage } from "../../utils/errors";
+import PasswordInput from "../../components/PasswordInput";
+import AutofillSafeInput from "../../components/AutofillSafeInput";
 
 export default function AdminDeliveryPartners() {
     const [partners, setPartners] = useState<DeliveryPartner[]>([]);
@@ -16,8 +19,8 @@ export default function AdminDeliveryPartners() {
         try {
             const {data}=await api.get("/admin/delivery-partners")
             setPartners(Array.isArray(data.partners) ? data.partners : [])
-        } catch (error:any) {
-            toast.error(error?.response?.data?.message || "Failed")
+        } catch (error:unknown) {
+            toast.error(getErrorMessage(error,"Failed to load delivery partners"))
             
         }finally{
             setLoading(false)
@@ -37,8 +40,8 @@ export default function AdminDeliveryPartners() {
             setShowForm(false);
             setForm({name:"",email:"",password:"",phone:"",vehicleType:"bike"})
             fetchPartners()
-        } catch(error:any) {
-            toast.error(error?.response?.data?.message || "Failed")
+        } catch(error:unknown) {
+            toast.error(getErrorMessage(error,"Failed to create delivery partner"))
         }finally{
             setSaving(false)
         }
@@ -49,8 +52,8 @@ export default function AdminDeliveryPartners() {
             await api.put(`/admin/delivery-partners/${id}`,{isActive:!isActive})
             toast.success(isActive?"Partner deactivated":"Partner activated")
             fetchPartners()
-        } catch (error:any) {
-            toast.error(error?.response?.data?.message || "Failed")
+        } catch (error:unknown) {
+            toast.error(getErrorMessage(error,"Failed to update delivery partner"))
         }
     };
 
@@ -120,11 +123,11 @@ export default function AdminDeliveryPartners() {
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
                                         <label className="block text-sm font-medium text-app-green mb-1.5">Email</label>
-                                        <input type="email" name="deliveryPartnerEmail" autoComplete="off" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl border border-app-border focus:border-app-green outline-none" />
+                                        <AutofillSafeInput type="email" name="freshcartNewDeliveryEmail" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl border border-app-border focus:border-app-green outline-none" />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-app-green mb-1.5">Password</label>
-                                        <input type="password" name="newDeliveryPartnerPassword" autoComplete="new-password" required minLength={6} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl border border-app-border focus:border-app-green outline-none" />
+                                        <PasswordInput name="newDeliveryPartnerPassword" autoComplete="new-password" required minLength={8} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl border border-app-border focus:border-app-green outline-none" />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">

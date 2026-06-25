@@ -3,9 +3,12 @@ import { BikeIcon } from "lucide-react";
 import { heroSectionData } from "../../assets/assets";
 import api from "../../config/api";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getSavedDeliveryPartner } from "../../utils/deliverySession";
 import { setStoredValue } from "../../utils/storage";
+import { getErrorMessage } from "../../utils/errors";
+import PasswordInput from "../../components/PasswordInput";
+import AutofillSafeInput from "../../components/AutofillSafeInput";
 
 export default function DeliveryLogin() {
     const navigate=useNavigate()
@@ -23,8 +26,8 @@ export default function DeliveryLogin() {
 
             toast.success("Login successful")
             navigate('/delivery')
-        } catch(error:any){
-            toast.error(error?.response?.data?.message || error?.message)
+        } catch(error:unknown){
+            toast.error(getErrorMessage(error,"Unable to sign in"))
         }finally{
             setLoading(false)
         }
@@ -53,7 +56,7 @@ export default function DeliveryLogin() {
                     <div className="text-center mb-8">
                         <div className="flex-center gap-2 mb-4">
                             <BikeIcon className="size-7 text-app-green" />
-                            <span className="text-2xl font-semibold text-app-green">Instacart</span>
+                            <span className="text-2xl font-semibold text-app-green">FreshCart</span>
                         </div>
                         <h1 className="text-2xl font-semibold text-app-green mb-2">Delivery Partner Login</h1>
                         <p className="text-sm text-app-text-light">Sign in to manage your deliveries</p>
@@ -62,11 +65,12 @@ export default function DeliveryLogin() {
                     <form onSubmit={handleSubmit} autoComplete="off" className="bg-white rounded-2xl p-8 space-y-5">
                         <div>
                             <label className="block text-sm font-medium text-app-green mb-1.5">Email</label>
-                            <input type="email" name="deliveryPartnerLoginEmail" autoComplete="off" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border not-focus:border-app-border text-sm transition-colors" placeholder="partner@example.com" />
+                            <AutofillSafeInput type="email" name="freshcartDeliveryLoginEmail" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-app-border text-sm transition-colors" placeholder="partner@example.com" />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-app-green mb-1.5">Password</label>
-                            <input type="password" name="deliveryPartnerLoginPassword" autoComplete="new-password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border not-focus:border-app-border text-sm transition-colors" placeholder="Password" />
+                            <PasswordInput name="freshcartDeliveryLoginSecret" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-app-border text-sm transition-colors" placeholder="Password" />
+                            <Link to="/delivery/forgot-password" className="block mt-2 text-right text-xs text-orange-600">Forgot password?</Link>
                         </div>
                         <button type="submit" disabled={loading} className="w-full py-3 bg-app-green text-white font-semibold rounded-xl hover:bg-app-green-light transition-colors disabled:opacity-60">
                             {loading ? "Signing in..." : "Sign In"}

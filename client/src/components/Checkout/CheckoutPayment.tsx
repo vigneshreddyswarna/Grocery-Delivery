@@ -13,6 +13,9 @@ export default function CheckoutPayment({ setStep, paymentMethod, setPaymentMeth
             <h2 className="text-lg font-semibold text-app-green mb-5 flex items-center gap-2">
                 <CreditCardIcon className="size-5" /> Payment Method
             </h2>
+            <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-900" role="note">
+                <strong>Portfolio demo:</strong> card and UPI payments use Stripe test mode. No real money is charged.
+            </div>
             <div className="space-y-3">
                 {[
                     { value: "card", label: "Credit / Debit Card", desc: "Pay securely in Indian rupees", icon: CreditCardIcon },

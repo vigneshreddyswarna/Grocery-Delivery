@@ -1,7 +1,17 @@
+import type { Category } from "../types"
 
+interface FilterPanelProps {
+    categories: Category[]
+    category: string
+    organic?: string
+    minPrice: string
+    maxPrice: string
+    updateFilter: (name:string,value:string)=>void
+    clearFilters: ()=>void
+    hasFilters: boolean
+}
 
-
-const FilterPanel = ({categories, category, minPrice, maxPrice, updateFilter, clearFilters, hasFilters}: any) => {
+const FilterPanel = ({categories, category, organic, minPrice, maxPrice, updateFilter, clearFilters, hasFilters}: FilterPanelProps) => {
     const categoriesWithAll=[{slug:"", name: "All Products"}, ...categories]
   return (
     <div className="space-y-6">
@@ -11,7 +21,7 @@ const FilterPanel = ({categories, category, minPrice, maxPrice, updateFilter, cl
 
             </h3>
             <div>
-                {categoriesWithAll.map((cat:any)=>(
+                {categoriesWithAll.map((cat)=>(
                     <button key={cat.slug} onClick={()=>updateFilter("category",cat.slug)} className={`block w-full text-left px-3 py-2 text-sm rounded-md transition-all ${category===cat.slug ? "bg-app-green text-white":"text-app-text-light hover:bg-app-cream"}`}>
                         {cat.name}
 
@@ -19,6 +29,10 @@ const FilterPanel = ({categories, category, minPrice, maxPrice, updateFilter, cl
                 ))}
             </div>
         </div>
+        <label className="flex items-center gap-2 text-sm text-app-text-light cursor-pointer">
+            <input type="checkbox" checked={organic === "true"} onChange={event=>updateFilter("organic",event.target.checked ? "true" : "")} />
+            Organic products only
+        </label>
         {/* Price Range */}
         <div>
             <h3 className="text-sm font-semibold text-app-green mb-3">

@@ -11,11 +11,15 @@ model User {
   id        String    @id @default(uuid())
   name      String
   email     String    @unique
-  password  String
+  password  String?
+  role      String    @default("CUSTOMER")
+  emailVerifiedAt DateTime?
+  googleId  String?   @unique
   phone     String?   @default("")
   avatar    String?   @default("")
   addresses Address[]
   orders    Order[]
+  authTokens AuthToken[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
@@ -87,6 +91,24 @@ model DeliveryPartner {
   vehicleType String?  @default("bike")
   isActive    Boolean? @default(true)
   orders      Order[]
+  emailVerifiedAt DateTime?
+  authTokens  AuthToken[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model AuthToken {
+  id                String           @id @default(uuid())
+  tokenHash         String           @unique
+  type              String
+  expiresAt         DateTime
+  usedAt            DateTime?
+  userId            String?
+  user              User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveryPartnerId String?
+  deliveryPartner   DeliveryPartner? @relation(fields: [deliveryPartnerId], references: [id], onDelete: Cascade)
+  createdAt         DateTime         @default(now())
+
+  @@index([userId, type])
+  @@index([deliveryPartnerId, type])
 }

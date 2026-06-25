@@ -5,6 +5,7 @@ import { Link } from "react-router-dom"
 import ProductCard from "../ProductCard"
 import api from "../../config/api"
 import toast from "react-hot-toast"
+import { getErrorMessage } from "../../utils/errors"
 import { normalizeProducts } from "../../utils/product"
 
 
@@ -14,8 +15,8 @@ const PopularProducts = () => {
     useEffect(()=>{
         api.get('/products?sort=rating').then(({data})=>{
             setProducts(normalizeProducts(data.products))
-        }).catch((error:any)=>{
-            toast.error(error.response?.data?.message || error?.message || "Failed to load popular products")
+        }).catch((error:unknown)=>{
+            toast.error(getErrorMessage(error,"Failed to load popular products"))
 
         })
     },[])

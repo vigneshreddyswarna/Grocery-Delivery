@@ -2,14 +2,16 @@ import { useEffect, useState } from "react"
 import { Link, useSearchParams } from "react-router-dom"
 import type { Order } from "../types"
 import { useCart } from "../context/CartContext"
-import { dummyDashboardOrdersData, statusColors } from "../assets/assets"
+import { statusColors } from "../assets/assets"
 import Loading from "../components/Loading"
 import { CalendarIcon, ChevronRightIcon, PackageIcon } from "lucide-react"
+import api from "../config/api"
+import toast from "react-hot-toast"
 
 
 const MyOrders = () => {
 
-  const currency=import.meta.env.VITE_CURRENCY_SYMBOL || "$"
+  const currency=import.meta.env.VITE_CURRENCY_SYMBOL || "₹"
   const [orders, setOrders]=useState<Order[]>([])
   const[loading, setLoading]=useState(true)
   const[activeTab, setActiveTab]=useState("all")
@@ -20,20 +22,50 @@ const MyOrders = () => {
   const {clearCart}=useCart()
 
   const fetchOrders = async()=>{
-    setOrders(dummyDashboardOrdersData as any)
-    setLoading(false)
+    setLoading(true)
+    try {
+      const params=activeTab !=="all" ? `?status=${activeTab}` : ""
+      const {data}=await api.get(`/orders${params}`)
+      setOrders(Array.isArray(data.orders) ? data.orders : [])
+    } catch (error:any) {
+      toast.error(error.response?.data?.message || error?.message)
+      
+    }finally{
+      setLoading(false)
+    }
   }
 
   useEffect(()=>{
-    if(searchParams.get("clearCart")){
-      clearCart()
-      setSearchParams()
-      setTimeout(()=>{
-        fetchOrders()
-      },2000)
-    }else{
+    const sessionId = searchParams.get("session_id")
+    if(!sessionId){
       fetchOrders()
+      return
     }
+
+    const confirmPayment = async()=>{
+      setLoading(true)
+      try{
+        for(let attempt=0; attempt<5; attempt++){
+          const {data}=await api.get(`/orders/payment/confirm?session_id=${encodeURIComponent(sessionId)}`)
+          if(data.paid){
+            clearCart()
+            setSearchParams({})
+            toast.success("Payment successful. Order placed!")
+            await fetchOrders()
+            return
+          }
+          await new Promise((resolve)=>setTimeout(resolve,1500))
+        }
+        toast.error("Payment is still processing. Refresh orders shortly.")
+        await fetchOrders()
+      }catch(error:any){
+        toast.error(error.response?.data?.message || error?.message || "Unable to confirm payment")
+      }finally{
+        setLoading(false)
+      }
+    }
+
+    void confirmPayment()
   
 
   },[activeTab])
@@ -71,12 +103,12 @@ const MyOrders = () => {
         ):(
           <div className="space-y-4">
             {orders.map((order)=>(
-              <Link key={order._id} to={`/orders/${order._id}`} className="block max-w-4xl bg-white rounded-2xl p-5 hover:shadow transition-all">
+              <Link key={order.id} to={`/orders/${order.id}`} className="block max-w-4xl bg-white rounded-2xl p-5 hover:shadow transition-all">
                 {/* order id, date & status */}
                 <div className="flex items-start justify-between mb-3">
                   {/* left */}
                   <div>
-                    <p className="text-sm font-medium text-app-green">Order #{order._id.slice(-8).toUpperCase()}</p>
+                    <p className="text-sm font-medium text-app-green">Order #{String(order.id || "").slice(-8).toUpperCase()}</p>
                     <div>
                       <CalendarIcon className="size-3 text-app-text-light"/>
                       <span className="text-xs text-app-text-light">{new Date(order.createdAt).toLocaleDateString("en-US",{month:"short", day:"numeric",year:"numeric"})}</span>
@@ -96,11 +128,11 @@ const MyOrders = () => {
 
                 {/*Item thumbnails */}
                 <div className="flex items-center gap-2 mb-3">
-                  {order.items.slice(0,4).map((item, i)=>(
+                  {(order.items || []).slice(0,4).map((item, i)=>(
                     <img key={i} src={item.image} alt={item.name} className="size-12 sm:size-16 rounded-lg object-cover border border-app-border"/>
                   ))}
-                  {order.items.length > 4 && <div className="size-12 sm:size-16 rounded-lg bg-app-cream flex-center text-xs font-semibold text-app-text-light">
-                    +{order.items.length - 4}
+                  {(order.items || []).length > 4 && <div className="size-12 sm:size-16 rounded-lg bg-app-cream flex-center text-xs font-semibold text-app-text-light">
+                    +{(order.items || []).length - 4}
                   </div>
 
                   }
@@ -109,9 +141,9 @@ const MyOrders = () => {
 
                 {/* total items & price */}
                 <div className="flex justify-between items-center pt-3 text-sm">
-                  <span className="text-app-text-light">{order.items.length} items</span>
+                  <span className="text-app-text-light">{(order.items || []).length} items</span>
 
-                  <span className="font-semibold text-app-green">{currency} {order.total.toFixed(2)}</span>
+                  <span className="font-semibold text-app-green">{currency} {(Number(order.total) || 0).toFixed(2)}</span>
                 </div>
               </Link>
             ))}

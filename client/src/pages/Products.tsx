@@ -1,19 +1,32 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Link, useSearchParams } from "react-router-dom"
 import type { Product } from "../types"
-import { categoriesData, dummyProducts } from "../assets/assets"
-import { ChevronDown, Home, SlidersHorizontal, XIcon } from "lucide-react"
+import { categoriesData,} from "../assets/assets"
+import { AlertCircle, ChevronDown, Home, RefreshCw, SlidersHorizontal, XIcon } from "lucide-react"
 import ProductCard from "../components/ProductCard"
 import Loading from "../components/Loading"
 import FilterPanel from "../components/FilterPanel"
+import toast from "react-hot-toast"
+import api from "../config/api"
+import { normalizeProducts } from "../utils/product"
 
+const getApiErrorMessage = (error: unknown) => {
+  if (error instanceof Error) return error.message
+  if (typeof error === "object" && error !== null && "response" in error) {
+    const response = (error as {response?: {data?: {message?: string}}}).response
+    return response?.data?.message || "Failed to load products"
+  }
+  return "Failed to load products"
+}
 
 const Products = () => {
 
   const [searchParams, setSearchParams] = useSearchParams()
   const [products, setProducts] = useState<Product[]>([])
-  const [totalPages, setTotalPages] = useState(1)
+  const [totalProducts, setTotalProducts] = useState(0)
+  const [totalPages,setTotalPages] = useState(1)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState("")
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
 
   const category = searchParams.get("category") || ""
@@ -23,18 +36,44 @@ const Products = () => {
   const minPrice = searchParams.get("minPrice") || ""
   const maxPrice = searchParams.get("maxPrice") || ""
 
-  const fetchProducts = async()=>{
+  const fetchProducts = useCallback(async()=>{
     setLoading(true)
-    setProducts(dummyProducts.filter((p)=> p.category === category || category===""))
-    setLoading(false)
-  }
+    setLoadError("")
+    try{
+      const params = new URLSearchParams()
+      if(category) params.set('category', category)
+      if(organic) params.set('organic', organic)
+      if(sort) params.set('sort', sort)
+      if(minPrice) params.set('minPrice', minPrice)
+      if(maxPrice) params.set('maxPrice', maxPrice)
+        params.set("page",String(page))
+        params.set("limit","12")
+
+        const {data}=await api.get(`/products?${params.toString()}`)
+
+        const nextProducts = normalizeProducts(data.products)
+        setProducts(nextProducts)
+        setTotalProducts(Number(data.total) || nextProducts.length)
+        setTotalPages(Math.max(1, Number(data.pages) || 1))
+
+      
+    }catch(error:unknown){
+      const message = getApiErrorMessage(error)
+      setProducts([])
+      setTotalProducts(0)
+      setLoadError(message)
+      toast.error(message)
+    }finally{
+      setLoading(false)
+    }
+  }, [category, organic, sort, page, minPrice, maxPrice])
 
   const updateFilter = (key: string,value: string)=>{
     const newParams =new URLSearchParams(searchParams)
     if(value){
       newParams.set(key, value)
     }else{
-      newParams.delete(key,value)
+      newParams.delete(key)
     }
     if(key != "page"){
       newParams.delete("page")
@@ -49,8 +88,9 @@ const Products = () => {
   const hasFilters = category || organic || minPrice || maxPrice
 
   useEffect(()=>{
-    fetchProducts()
-  },[category, organic, sort, page, minPrice, maxPrice])
+    const request = window.setTimeout(() => void fetchProducts(), 0)
+    return () => window.clearTimeout(request)
+  },[fetchProducts])
 
 
   return (
@@ -75,14 +115,14 @@ const Products = () => {
 
           </aside>
           {/* Main Content */}
-          <main className="flex-1">
+          <main className="flex-1 min-w-0">
             {/*Header*/}
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h1 className="text-2xl font-semibold text-app-green">{activeCategory ? activeCategory.name : "All Products" }</h1>
-                <p className="text-sm text-app-text-light mt-0.5">{products.length} products found</p>
+            <div className="flex items-start justify-between gap-3 mb-6">
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-2xl font-semibold text-app-green wrap-break-word">{activeCategory ? activeCategory.name : "All Products" }</h1>
+                <p className="text-sm text-app-text-light mt-0.5">{totalProducts} products found</p>
               </div>
-              <div className="flex flex-col lg:items-center gap-3">
+              <div className="flex shrink-0 flex-col items-end gap-2 sm:flex-row sm:items-center">
                 {/* Mobile filter toggle*/}
                 <button onClick={()=>setMobileFiltersOpen(true)}className="lg:hidden flex items-center gap-2 px-3 py-2 text-sm bg-white rounded-xl border border-app-border hover:bg-app-cream transition-colors">
                   <SlidersHorizontal className="size-4"/>Filters
@@ -107,6 +147,15 @@ const Products = () => {
             {/* Product Grid */}
             {loading ? (
               <Loading/>
+            ):loadError ? (
+              <div className="text-center py-16 px-4">
+                <AlertCircle className="size-10 text-app-error mx-auto mb-3" />
+                <p className="text-lg font-semibold text-app-green mb-2">Products could not be loaded</p>
+                <p className="text-sm text-app-text-light mb-5 max-w-md mx-auto">{loadError}</p>
+                <button onClick={fetchProducts} className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium bg-app-green text-white rounded-lg">
+                  <RefreshCw className="size-4" /> Retry
+                </button>
+              </div>
             ):products.length===0?(
               <div className="text-center py-16">
                 <p className="text-lg font-semibold text-app-green mb-2">No Products Found</p>
@@ -115,8 +164,8 @@ const Products = () => {
               </div>
             ):(
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 xl:gap-8">
-                {products.map((product)=>product.stock > 0 && (
-                  <ProductCard key={product._id} product={product} />
+                {products.map((product)=>(
+                  <ProductCard key={product.id} product={product} />
                 ))}
 
               </div>

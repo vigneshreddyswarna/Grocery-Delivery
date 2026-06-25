@@ -1,22 +1,49 @@
-import { Outlet, useNavigate } from "react-router-dom";
+import { Navigate, Outlet, useNavigate } from "react-router-dom";
 import { LogOutIcon, TruckIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import { clearDeliverySession, getSavedDeliveryPartner } from "../../utils/deliverySession";
 import type { DeliveryPartner } from "../../types";
-import { dummyDeliveryPartnerData } from "../../assets/assets";
+import api from "../../config/api";
+import Loading from "../../components/Loading";
+import { setStoredValue } from "../../utils/storage";
 
 export default function DeliveryLayout() {
     const navigate = useNavigate();
-    const [partner, setPartner] = useState<DeliveryPartner | null>(null);
+    const [partner, setPartner] = useState(getSavedDeliveryPartner);
+    const [checkingAuth, setCheckingAuth] = useState(Boolean(partner));
 
     useEffect(() => {
-        setPartner(dummyDeliveryPartnerData[0] as DeliveryPartner);
-    }, [navigate]);
+        if (!getSavedDeliveryPartner()) return
+
+        let active = true
+        api.get<{partner: DeliveryPartner}>("/delivery/me")
+            .then(({data}) => {
+                if (!active) return
+                setStoredValue("delivery_partner", JSON.stringify(data.partner))
+                setPartner(data.partner)
+            })
+            .catch(() => {
+                if (!active) return
+                clearDeliverySession()
+                setPartner(null)
+            })
+            .finally(() => {
+                if (active) setCheckingAuth(false)
+            })
+
+        return () => {
+            active = false
+        }
+    }, [])
 
     const handleLogout = () => {
+        clearDeliverySession()
+        setPartner(null)
         navigate("/delivery/login");
     };
 
-    if (!partner) return null;
+    if (checkingAuth) return <Loading />;
+    if (!partner) return <Navigate to="/delivery/login" replace />;
 
     return (
         <div className="min-h-screen bg-app-cream">

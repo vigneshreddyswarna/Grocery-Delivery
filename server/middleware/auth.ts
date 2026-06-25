@@ -10,7 +10,11 @@ const auth=(req: Request, res: Response, next: NextFunction)=>{
             return res.status(401).json({message:"No token provided,authorization denied"})
         }
         const token=authHeader.split(" ")[1]
-        const decoded=jwt.verify(token,process.env.JWT_SECRET as string) as {id: string}
+        const decoded=jwt.verify(token,process.env.JWT_SECRET as string) as {id: string, role?: string}
+
+        if(decoded.role !== "customer"){
+            return res.status(403).json({message:"Access denied. Customer account required"})
+        }
 
         req.user={id:decoded.id}
         next()

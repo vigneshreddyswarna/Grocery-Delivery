@@ -121,10 +121,11 @@ import { ArrowUpRightIcon, BikeIcon, ChevronDownIcon, LogOutIcon, MapPinIcon, Me
 import { useState } from "react"
 import { Link,useNavigate } from "react-router-dom"
 import { useCart } from "../context/CartContext"
+import { useAuth } from "../context/AuthContext"
 
 const Navbar = () => {
     // Mock user data
-    const user: any = { name: "John Doe", email: "john@example.com", isAdmin: true }
+    const {user,logout}=useAuth()
     // const user: any = null
     
     const { cartCount, setIsCartOpen } = useCart()
@@ -133,6 +134,7 @@ const Navbar = () => {
     const [searchQuery, setSearchQuery] = useState("")
     const [userMenuOpen, setUserMenuOpen] = useState(false)
     const navigate=useNavigate()
+    const userInitial = user?.name?.charAt(0).toUpperCase() || "U"
 
 
     const handleSearch=(e:React.SubmitEvent)=>{
@@ -145,6 +147,7 @@ const Navbar = () => {
     }
 
     const handleLogout=()=>{
+        logout()
         setUserMenuOpen(false)
         navigate("/")
     }
@@ -164,6 +167,7 @@ const Navbar = () => {
                         <Link to='/'>Home</Link>
                         <Link to='/products'>Products</Link>
                         <Link to='/deals' className="text-app-orange">Deals</Link>
+                        {user?.isAdmin && <Link to='/admin' className="text-app-green font-medium">Admin</Link>}
                     </div>
 
                     {/* Search */}
@@ -197,7 +201,7 @@ const Navbar = () => {
                             {user ? (
                                 <button onClick={() => setUserMenuOpen(!userMenuOpen)} className="flex items-center gap-2 p-2 focus:outline-none">
                                     <div className="size-7 rounded-full bg-green-950 text-white flex items-center justify-center text-sm font-semibold">
-                                        {user.name.charAt(0).toUpperCase()}
+                                        {userInitial}
                                     </div>
                                     <ChevronDownIcon className="size-3 text-zinc-500" />
                                 </button>

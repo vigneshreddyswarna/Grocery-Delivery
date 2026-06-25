@@ -1,7 +1,30 @@
 import { XIcon } from "lucide-react"
 
 
+import toast from "react-hot-toast"
+
 const AddressForm = ({ resetForm, handleSubmit, form, setForm, editingId }: any) => {
+    const useCurrentLocation = () => {
+        if (!navigator.geolocation) {
+            toast.error("Location is not supported by this browser")
+            return
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                setForm({
+                    ...form,
+                    lat: String(position.coords.latitude),
+                    lng: String(position.coords.longitude),
+                    mapLocationSource: "current"
+                })
+                toast.success("Location points added")
+            },
+            (error) => toast.error(error.message || "Unable to get your location"),
+            { enableHighAccuracy: true }
+        )
+    }
+
     return (
         <>
             {/* Overlay */}
@@ -27,23 +50,23 @@ const AddressForm = ({ resetForm, handleSubmit, form, setForm, editingId }: any)
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-app-green mb-1.5">Street Address</label>
-                            <input type="text" required className="w-full px-4 py-2.5 text-sm rounded-xl border border-app-border focus:border-app-green outline-none" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+                            <input type="text" required className="w-full px-4 py-2.5 text-sm rounded-xl border border-app-border focus:border-app-green outline-none" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value, mapLocationSource: "address" })} />
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">
                             <div >
                                 <label className="block text-sm font-medium text-app-green mb-1.5">City</label>
-                                <input type="text" required className="w-full px-4 py-2.5 text-sm rounded-xl border border-app-border focus:border-app-green outline-none" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
+                                <input type="text" required className="w-full px-4 py-2.5 text-sm rounded-xl border border-app-border focus:border-app-green outline-none" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value, mapLocationSource: "address" })} />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-app-green mb-1.5">State</label>
-                                <input type="text" required className="w-full px-4 py-2.5 text-sm rounded-xl border border-app-border focus:border-app-green outline-none" value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} />
+                                <input type="text" required className="w-full px-4 py-2.5 text-sm rounded-xl border border-app-border focus:border-app-green outline-none" value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value, mapLocationSource: "address" })} />
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                             <div>
                                 <label className="block text-sm font-medium text-app-green mb-1.5">ZIP Code</label>
-                                <input type="text" required className="w-full px-4 py-2.5 text-sm rounded-xl border border-app-border focus:border-app-green outline-none" value={form.zip} onChange={(e) => setForm({ ...form, zip: e.target.value })} />
+                                <input type="text" required className="w-full px-4 py-2.5 text-sm rounded-xl border border-app-border focus:border-app-green outline-none" value={form.zip} onChange={(e) => setForm({ ...form, zip: e.target.value, mapLocationSource: "address" })} />
 
                             </div>
                             <div className="flex items-end pb-1">
@@ -56,6 +79,19 @@ const AddressForm = ({ resetForm, handleSubmit, form, setForm, editingId }: any)
                             </div>
 
 
+                        </div>
+                        <div>
+                            <div className="flex items-center justify-between gap-3 mb-1.5">
+                                <label className="block text-sm font-medium text-app-green">Map Location Points</label>
+                                <button type="button" onClick={useCurrentLocation} className="text-xs font-semibold text-app-orange hover:text-app-orange-dark">
+                                    Use current location
+                                </button>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <input type="number" step="any" placeholder="Latitude" className="w-full px-4 py-2.5 text-sm rounded-xl border border-app-border focus:border-app-green outline-none" value={form.lat} onChange={(e) => setForm({ ...form, lat: e.target.value, mapLocationSource: "manual" })} />
+                                <input type="number" step="any" placeholder="Longitude" className="w-full px-4 py-2.5 text-sm rounded-xl border border-app-border focus:border-app-green outline-none" value={form.lng} onChange={(e) => setForm({ ...form, lng: e.target.value, mapLocationSource: "manual" })} />
+                            </div>
+                            <p className="mt-1 text-xs text-app-text-light">The map point is found from this delivery address when you save. Use current location only if that is the delivery spot.</p>
                         </div>
                     </div>
 

@@ -1,12 +1,18 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeftIcon } from "lucide-react";
-import { categoriesData, dummyProducts } from "../../assets/assets";
+import { categoriesData } from "../../assets/assets";
 import Loading from "../../components/Loading";
+import api from "../../config/api";
+import toast from "react-hot-toast";
+// import type { Product } from "../../types";
+
+// const products = dummyProducts as Product[];
 
 export default function AdminProductForm() {
     const { id } = useParams();
     const isEdit = Boolean(id);
+    const navigate = useNavigate();
 
     const [loading, setLoading] = useState(isEdit);
     const [saving, setSaving] = useState(false);
@@ -25,18 +31,72 @@ export default function AdminProductForm() {
     });
 
     useEffect(() => {
+        // Fixed: Corrected the =id{ syntax mistake to a proper arrow function token signature
         const fetchData = async () => {
-            if (isEdit) {
-                setFormData(() => dummyProducts.find((p) => p._id === id) as any)
+            try {
+                if(isEdit)
+                    {
+                    const {data:prodData}=await api.get(`/products/${id}`)
+                    const p=prodData.product
+                    setFormData({
+                        name:p.name,
+                        description:p.description,
+                        price:p.price.toString(),
+                        originalPrice:p.originalPrice?p.originalPrice.toString():"",
+                        image:p.image,
+                        category:p.category,
+                        unit:p.unit,
+                        stock:p.stock.toString(),
+                        isOrganic:p.isOrganic
+                    })
             }
-            setLoading(false)
+            } catch (error:any) {
+                toast.error(error.response?.data?.message || "Failed to load data")
+                
+            }finally{
+                setLoading(false)
+            }
         };
         fetchData();
     }, [id, isEdit]);
 
     const handleSubmit = async (e: React.SubmitEvent) => {
         e.preventDefault();
+        setSaving(true);
+        try {
+            let finalImageUrl=formData.image
+            if(imageFile){
+                const formDataUpload=new FormData()
+                formDataUpload.append("image",imageFile)
+                const {data}=await api.post("/upload",formDataUpload)
+                finalImageUrl=data.url
 
+            }
+            if(!finalImageUrl){
+                toast.error("Please upload a product image")
+                setSaving(false)
+                return
+            }
+            const payload={
+                ...formData,
+                image:finalImageUrl,
+                price:Number(formData.price),
+                originalPrice:formData.originalPrice?Number(formData.originalPrice):0,
+                stock:Number(formData.stock)
+            }
+            if(isEdit){
+                await api.put(`/products/${id}`,payload)
+                toast.success("Product updated succesfully")
+            }else{
+                await api.post("/products",payload)
+                toast.success("Product created successfully")
+            }
+            navigate('/admin/products')
+        } catch(error:any){
+            toast.error(error.response?.data?.message || "Failed to save product")
+        } finally{
+            setSaving(false)
+        }
     };
 
     return (
@@ -65,11 +125,11 @@ export default function AdminProductForm() {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-zinc-700 mb-2">Price ($)</label>
+                                <label className="block text-sm font-medium text-zinc-700 mb-2">Price (₹)</label>
                                 <input required type="number" step="0.01" min="0" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} className="w-full px-4 py-2.5 rounded-lg border border-zinc-200 focus:border-app-green focus:ring-1 focus:ring-app-green outline-none transition-all" />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-zinc-700 mb-2">Original Price ($) - Optional</label>
+                                <label className="block text-sm font-medium text-zinc-700 mb-2">Original Price (₹) - Optional</label>
                                 <input type="number" step="0.01" min="0" value={formData.originalPrice} onChange={e => setFormData({ ...formData, originalPrice: e.target.value })} className="w-full px-4 py-2.5 rounded-lg border border-zinc-200 focus:border-app-green focus:ring-1 focus:ring-app-green outline-none transition-all" />
                             </div>
                             <div>

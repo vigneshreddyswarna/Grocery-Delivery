@@ -1,11 +1,12 @@
 import { useNavigate } from "react-router-dom"
 import { useCart } from "../context/CartContext"
 import { ArrowRightIcon, MinusIcon, PlusIcon, ShoppingBagIcon, Trash2Icon, XIcon } from "lucide-react"
+import { getProductId, normalizeProduct } from "../utils/product"
 
 
 const CartSidebar = () => {
 
-    const currency = import.meta.env.VITE_CURRENCY_SYMBOL || "$"
+    const currency = import.meta.env.VITE_CURRENCY_SYMBOL || "₹"
 
     const { items, updateQuantity, removeFromCart, cartTotal, isCartOpen, setIsCartOpen } = useCart()
 
@@ -13,7 +14,7 @@ const CartSidebar = () => {
 
     if (!isCartOpen) return null
 
-    const deliveryFee = cartTotal > 20 ? 0 : 1.99
+    const deliveryFee = cartTotal >= 499 ? 0 : 35
     const grandTotal = cartTotal + deliveryFee
     return (
         <>
@@ -44,29 +45,32 @@ const CartSidebar = () => {
 
                         </div>
                     ):(
-                        items.map((item)=>(
-                            <div key={item.product._id} className="flex gap-3 bg-app-cream/60 rounded-xl p-3">
-                                <img src={item.product.image} alt={item.product.name} className="size-16 rounded-lg object-cover shrink-0"/>
+                        items.map((item)=>{
+                            const product = normalizeProduct(item.product)
+                            const productId = getProductId(product)
+                            return (
+                            <div key={productId} className="flex gap-3 bg-app-cream/60 rounded-xl p-3">
+                                <img src={product.image} alt={product.name} className="size-16 rounded-lg object-cover shrink-0"/>
                                 <div className="flex-1 min-w-0">
-                                    <h4 className="text-sm font-semibold truncate">{item.product.name}</h4>
-                                    <p className="text-xs text-app-text-light">{currency}{item.product.price.toFixed(2)} / {item.product.unit}</p>
+                                    <h4 className="text-sm font-semibold truncate">{product.name}</h4>
+                                    <p className="text-xs text-app-text-light">{currency}{product.price.toFixed(2)} / {product.unit}</p>
                                     <div className="flex items-center justify-between mt-2">
                                         <div className="flex items-center gap-1.5">
-                                            <button onClick={()=>updateQuantity(item.product._id,item.quantity - 1)}className="size-7 rounded-lg bg-white border border-app-border flex-center">
+                                            <button onClick={()=>updateQuantity(productId,item.quantity - 1)}className="size-7 rounded-lg bg-white border border-app-border flex-center">
                                                 <MinusIcon className="size-3"/>
                                             </button>
 
                                             <span className="text-sm font-semibold w-6 text-center">{item.quantity}</span>
 
-                                            <button onClick={()=>updateQuantity(item.product._id,item.quantity + 1)}className="size-7 rounded-lg bg-white border border-app-border flex-center">
+                                            <button onClick={()=>updateQuantity(productId,item.quantity + 1)}className="size-7 rounded-lg bg-white border border-app-border flex-center">
                                                 <PlusIcon className="size-3"/>
                                             </button>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <span>
-                                                {currency}{(item.product.price * item.quantity).toFixed(2)}
+                                                {currency}{(product.price * item.quantity).toFixed(2)}
                                             </span>
-                                            <button  onClick={()=>removeFromCart(item.product._id)} className="p-1 text-app-text-light hover:text-app-error transition-colors">
+                                            <button  onClick={()=>removeFromCart(productId)} className="p-1 text-app-text-light hover:text-app-error transition-colors">
                                                 <Trash2Icon className="size-4" />
                                             </button>
 
@@ -79,7 +83,7 @@ const CartSidebar = () => {
 
 
                             </div>
-                        ))
+                        )})
                     )}
 
                 </div>
@@ -97,7 +101,7 @@ const CartSidebar = () => {
 
                         </div>
 
-                        {deliveryFee>0 && <p className="text-xs text-app-text-light text-center">Free delivery on orders over {currency}20!</p>}
+                        {deliveryFee>0 && <p className="text-xs text-app-text-light text-center">Free delivery on orders over {currency}499!</p>}
 
                         <div className="flex justify-between text-base font-semibold border-t border-app-border pt-3">
 

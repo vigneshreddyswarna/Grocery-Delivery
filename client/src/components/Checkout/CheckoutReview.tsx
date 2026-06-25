@@ -1,4 +1,4 @@
-import { CheckIcon, TruckIcon } from "lucide-react";
+import { CheckIcon, CreditCardIcon, TruckIcon } from "lucide-react";
 import type { Address } from "../../types";
 
 interface CheckoutReviewProps {
@@ -7,11 +7,12 @@ interface CheckoutReviewProps {
     handlePlaceOrder: () => void;
     loading: boolean;
     total: number;
+    paymentMethod: string;
 }
 
-export default function CheckoutReview({ address, items, handlePlaceOrder, loading, total }: CheckoutReviewProps) {
+export default function CheckoutReview({ address, items, handlePlaceOrder, loading, total, paymentMethod }: CheckoutReviewProps) {
 
-    const currency = import.meta.env.VITE_CURRENCY_SYMBOL || "$";
+    const currency = import.meta.env.VITE_CURRENCY_SYMBOL || "₹";
 
     return (
         <div className="bg-white rounded-2xl p-6 animate-fade-in">
@@ -30,10 +31,20 @@ export default function CheckoutReview({ address, items, handlePlaceOrder, loadi
                 </p>
             </div>
 
+            <div className="mb-5 p-4 bg-app-cream rounded-xl flex items-center gap-3">
+                <CreditCardIcon className="size-4 text-app-green" />
+                <div>
+                    <p className="text-sm font-semibold text-app-green">Payment Method</p>
+                    <p className="text-sm text-app-text-light">
+                        {paymentMethod === "upi" ? "UPI" : paymentMethod === "card" ? "Credit or Debit Card" : "Cash on Delivery"}
+                    </p>
+                </div>
+            </div>
+
             {/* Items */}
             <div className="space-y-3 mb-5">
                 {items.map((item) => (
-                    <div key={item.product._id} className="flex items-center gap-3">
+                    <div key={item.product.id} className="flex items-center gap-3">
                         <img src={item.product.image} alt={item.product.name} className="size-12 rounded-lg object-cover" />
                         <div className="flex-1">
                             <p className="text-sm font-medium text-app-green">{item.product.name}</p>

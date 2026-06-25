@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { PackageIcon, UsersIcon, ShoppingBagIcon, AlertTriangleIcon } from "lucide-react";
 import Loading from "../../components/Loading";
-import { dummyAdminDashboardData, statusColors } from "../../assets/assets";
+import { statusColors } from "../../assets/assets";
+import api from "../../config/api";
 
 interface Stats {
     totalOrders: number;
@@ -14,16 +15,25 @@ interface Stats {
 
 export default function AdminDashboard() {
 
-    const currency = import.meta.env.VITE_CURRENCY_SYMBOL || "$";
+    const currency = import.meta.env.VITE_CURRENCY_SYMBOL || "₹";
 
     const [stats, setStats] = useState<Stats | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        setTimeout(() => {
-            setStats(dummyAdminDashboardData);
-            setLoading(false);
-        }, 1000);
+        api.get("/admin/stats").then((res)=>setStats({
+            totalOrders: Number(res.data?.totalOrders) || 0,
+            totalUsers: Number(res.data?.totalUsers) || 0,
+            totalProducts: Number(res.data?.totalProducts) || 0,
+            outOfStock: Number(res.data?.outOfStock) || 0,
+            recentOrders: Array.isArray(res.data?.recentOrders) ? res.data.recentOrders : [],
+        })).catch(()=>setStats({
+            totalOrders: 0,
+            totalUsers: 0,
+            totalProducts: 0,
+            outOfStock: 0,
+            recentOrders: [],
+        })).finally(()=>setLoading(false))
     }, []);
 
     const cards = stats
@@ -81,14 +91,14 @@ export default function AdminDashboard() {
                                 </tr>
                             ) : (
                                 stats?.recentOrders.map((order: any) => (
-                                    <tr key={order._id} className="hover:bg-zinc-50/50 transition-colors">
-                                        <td className="px-6 py-4 font-mono text-xs text-zinc-500">#{order._id.slice(-6).toUpperCase()}</td>
+                                    <tr key={order.id} className="hover:bg-zinc-50/50 transition-colors">
+                                        <td className="px-6 py-4 font-mono text-xs text-zinc-500">#{String(order.id || "").slice(-6).toUpperCase()}</td>
                                         <td className="px-6 py-4">
                                             <p className="font-medium text-zinc-900">{order.user?.name || "—"}</p>
                                             <p className="text-xs text-zinc-500">{order.user?.email || ""}</p>
                                         </td>
                                         <td className="px-6 py-4 text-zinc-600">{order.items?.length || 0} items</td>
-                                        <td className="px-6 py-4 font-medium">{currency}{order.total?.toFixed(2)}</td>
+                                        <td className="px-6 py-4 font-medium">{currency}{(Number(order.total) || 0).toFixed(2)}</td>
                                         <td className="px-6 py-4">
                                             <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${statusColors[order.status] || "bg-zinc-100 text-zinc-600"}`}>
                                                 {order.status}

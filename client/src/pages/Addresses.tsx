@@ -1,98 +1,197 @@
 import { MapPinIcon, PlusIcon } from "lucide-react"
-import { dummyAddressData } from "../assets/assets"
 import type { Address } from "../types"
 import React, { useEffect, useState } from "react"
 import Loading from "../components/Loading"
 import AddressCard from "../components/AddressCard"
 import AddressForm from "../components/AddressForm"
-
+import { useAuth } from "../context/AuthContext"
+import api from "../config/api"
+import toast from "react-hot-toast"
+import { ADDRESS_API } from "../config/routes"
 
 const Addresses = () => {
+  const { updateUser } = useAuth()
 
-  const [addresses, setAddresses]=useState<Address[]>([])
-  const [loading, setLoading]= useState(true)
-  const [showForm, setShowForm]=useState(false)
-  const [editingId, setEditingId]=useState<string | null>(null)
-  const [form, setForm]=useState({label:"",
-    address:"",
-    city:"",
-    state:"",
-    zip:"",
-    isDefault:false
+  const [addresses, setAddresses] = useState<Address[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [form, setForm] = useState({
+    label: "",
+    address: "",
+    city: "",
+    state: "",
+    zip: "",
+    isDefault: false,
+    lat: "",
+    lng: "",
+    mapLocationSource: "address"
   })
 
-  const resetForm=()=>{
-    setForm({label:"",address:"",
-    city:"",
-    state:"",
-    zip:"",
-    isDefault:false
-  })
-  setShowForm(false)
-  setEditingId(null)
-  }
-
-  const handleSubmit=async (e:React.SubmitEvent)=>{
-    e.preventDefault()
-  }
-
-  const onEditHandler =(add: Address)=>{
-    setForm({label:add.label,
-    address:add.address,
-    city:add.city,
-    state:add.state,
-    zip:add.zip,
-    isDefault:add.isDefault
-
+  const resetForm = () => {
+    setForm({
+      label: "",
+      address: "",
+      city: "",
+      state: "",
+      zip: "",
+      isDefault: false,
+      lat: "",
+      lng: "",
+      mapLocationSource: "address"
     })
-    setEditingId(add._id)
+    setShowForm(false)
+    setEditingId(null)
+  }
+
+  const normalizeAddresses = (items: Array<Address & { _id?: string }>): Address[] =>
+    items
+      .map((item) => ({
+        ...item,
+        id: item.id || item._id || "",
+      }))
+      .filter((item) => item.id)
+
+  const geocodeAddress = async (): Promise<{ lat: number; lng: number }> => {
+    const query = [form.address, form.city, form.state, form.zip].filter(Boolean).join(", ")
+    if (!query) throw new Error("Enter a delivery address before saving")
+
+    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`)
+    if (!response.ok) throw new Error("Unable to find this address on the map")
+
+    const results = await response.json()
+    const match = Array.isArray(results) ? results[0] : null
+    if (!match?.lat || !match?.lon) throw new Error("Unable to find this address on the map")
+
+    return {
+      lat: Number(match.lat),
+      lng: Number(match.lon)
+    }
+  }
+
+  // Fixed: Corrected React event type signature to handle HTML form submission
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    try {
+      const hasValidProvidedCoords = Number.isFinite(Number(form.lat)) && Number.isFinite(Number(form.lng))
+      const shouldUseAddressMapPoint = form.mapLocationSource === "address" || !hasValidProvidedCoords
+      const coords = shouldUseAddressMapPoint
+        ? await geocodeAddress()
+        : { lat: Number(form.lat), lng: Number(form.lng) }
+      const payload = {
+        label: form.label,
+        address: form.address,
+        city: form.city,
+        state: form.state,
+        zip: form.zip,
+        isDefault: form.isDefault,
+        ...coords
+      }
+      
+      if (editingId) {
+        const { data } = await api.put(`${ADDRESS_API}/${editingId}`, payload)
+        const updatedAddresses = normalizeAddresses(data.addresses || data)
+        setAddresses(updatedAddresses)
+        if (updateUser) updateUser({ addresses: updatedAddresses })
+        toast.success("Address updated!")
+      } else {
+        const { data } = await api.post(ADDRESS_API, payload)
+        const updatedAddresses = normalizeAddresses(data.addresses || data)
+        setAddresses(updatedAddresses)
+        if (updateUser) updateUser({ addresses: updatedAddresses })
+        toast.success("Address added!")
+      }
+      resetForm()
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to save address"
+      toast.error(message)
+    }
+  }
+
+  const onEditHandler = (add: Address) => {
+    setForm({
+      label: add.label,
+      address: add.address,
+      city: add.city,
+      state: add.state,
+      zip: add.zip,
+      isDefault: add.isDefault,
+      lat: String(add.lat ?? ""),
+      lng: String(add.lng ?? ""),
+      mapLocationSource: "manual"
+    })
+    // Fixed: Accounted for fallback Mongo identity schema structures safely
+    setEditingId(add.id)
     setShowForm(true)
   }
 
-  useEffect(()=>{
-    setAddresses(dummyAddressData)
-    setTimeout(()=>setLoading(false),1000)
-  },[])
+  useEffect(() => {
+    // Fixed: Correctly destructured res.data context from Axios HTTP payload stream
+    api.get(ADDRESS_API)
+      .then(({ data }) => {
+        setAddresses(normalizeAddresses(data.addresses || data || []))
+      })
+      .catch((error: unknown) => {
+        const message = error instanceof Error ? error.message : "Failed loading addresses"
+        toast.error(message)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }, [])
 
   return (
     <div className="min-h-screen bg-app-cream">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
         {/* Page Header */}
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-semibold text-app-green">My Addresses</h1>
-          <button onClick={()=>{resetForm(); setShowForm(true)}} className="px-4 py-2 bg-app-green text-white text-sm font-semibold rounded-xl hover:bg-app-green-light transition-colors flex items-center gap-2">
-            <PlusIcon className="size-4"/> Add Address
-
+          <button 
+            onClick={() => { resetForm(); setShowForm(true) }} 
+            className="px-4 py-2 bg-app-green text-white text-sm font-semibold rounded-xl hover:bg-opacity-90 transition-all flex items-center gap-2 active:scale-95 shadow-sm"
+          >
+            <PlusIcon className="size-4" /> Add Address
           </button>
-
         </div>
 
-        {/* Form Model */}
-        {showForm && <AddressForm resetForm={resetForm} handleSubmit={handleSubmit} form={form} setForm={setForm} editingId={editingId}/>}
+        {/* Form Modal Component Mount */}
+        {showForm && (
+          <AddressForm 
+            resetForm={resetForm} 
+            handleSubmit={handleSubmit} 
+            form={form} 
+            setForm={setForm} 
+            editingId={editingId} 
+          />
+        )}
 
-        {/* Addresses List */}
-        {
-          loading?(
-            <Loading />
-          ) : addresses.length===0?(
-            <div className="text-center py-16">
-              <MapPinIcon className="size-16 text-app-border mx-auto mb-4"/>
-              <h2 className="text-lg font-semibold text-app-green mb-2">No addresses saved</h2>
-              <p className="text-sm text-app-text-light">Add an address for faster checkout</p>
-
-            </div>
-          ):(
-            <div className="space-y-4">
-              {addresses.map((addr)=>(
-                <AddressCard key={addr._id} addr={addr} onEditHandler={onEditHandler} setAddresses={setAddresses}/>
-              ))}
-
-            </div>
-          )
-        }
+        {/* Addresses Dynamic Grid List Workspace Rendering */}
+        {loading ? (
+          <Loading />
+        ) : addresses.length === 0 ? (
+          <div className="text-center py-16 bg-white border border-black/5 rounded-2xl max-w-xl mx-auto p-8 shadow-xs mt-10">
+            <MapPinIcon className="size-16 text-app-border mx-auto mb-4 stroke-[1.5]" />
+            <h2 className="text-lg font-semibold text-app-green mb-2">No addresses saved</h2>
+            <p className="text-sm text-app-text-light">Add a target delivery destination layout address for faster checkout processing metrics</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {addresses.map((addr) => {
+              const activeId = addr.id;
+              return (
+                <AddressCard 
+                  key={activeId} 
+                  addr={addr} 
+                  onEditHandler={onEditHandler}
+                  setAddresses={setAddresses} // Handed down matching context properties mapped in our prior sub-components
+                />
+              )
+            })}
+          </div>
+        )}
 
       </div>
-      
     </div>
   )
 }

@@ -124,8 +124,8 @@ const sendMonthlyOffers=inngest.createFunction({
                                                             ${p.name}
                                                         </p>
                                                         <p style="margin: 4px 0 0; font-size: 15px; font-weight: 700; color: #16a34a;">
-                                                            $${p.price.toFixed(2)}
-                                                            ${p.originalPrice > p.price ? `<span style="font-size: 11px; color: #9ca3af; text-decoration: line-through; margin-left: 4px;">$${p.originalPrice.toFixed(2)}</span>` : ""}
+                                                            ₹${p.price.toFixed(2)}
+                                                            ${p.originalPrice > p.price ? `<span style="font-size: 11px; color: #9ca3af; text-decoration: line-through; margin-left: 4px;">₹${p.originalPrice.toFixed(2)}</span>` : ""}
                                                         </p>
                                                     </div>
                                                 </div>

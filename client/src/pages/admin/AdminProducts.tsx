@@ -1,22 +1,28 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { PlusIcon, EditIcon, XIcon } from "lucide-react";
+import { PlusIcon, EditIcon, Trash2Icon, XIcon } from "lucide-react";
 import type { Product } from "../../types";
 import Loading from "../../components/Loading";
-import { dummyProducts } from "../../assets/assets";
+import api from "../../config/api";
+import toast from "react-hot-toast";
+import { normalizeProducts } from "../../utils/product";
 
 export default function AdminProducts() {
 
-    const currency = import.meta.env.VITE_CURRENCY_SYMBOL || "$";
+    const currency = import.meta.env.VITE_CURRENCY_SYMBOL || "₹";
 
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
 
     const fetchProducts = async () => {
-        setProducts(dummyProducts);
-        setTimeout(() => {
-            setLoading(false);
-        }, 1000);
+        try {
+            const {data}=await api.get("/products")
+            setProducts(normalizeProducts(data.products))
+        } catch (error:any) {
+            toast.error(error.response?.data?.message || error?.message)
+        }finally{
+            setLoading(false)
+        }
     };
 
     useEffect(() => {
@@ -25,7 +31,30 @@ export default function AdminProducts() {
 
     const handleMarkOutOfStock = async (id: string, name: string) => {
         if (!window.confirm(`Are you sure you want to mark "${name}" as out of stock?`)) return;
-        console.log(id);
+        try {
+            await api.put(`/products/${id}`, { stock: 0 })
+            setProducts((currentProducts) =>
+                currentProducts.map((product) =>
+                    product.id === id ? { ...product, stock: 0 } : product
+                )
+            )
+            toast.success("Product marked as out of stock")
+        } catch (error:any) {
+            toast.error(error.response?.data?.message || "Failed to update product")
+            
+        }
+    };
+
+    const handleDeleteProduct = async (id: string, name: string) => {
+        if (!window.confirm(`Permanently delete "${name}"? This cannot be undone.`)) return;
+
+        try {
+            await api.delete(`/products/${id}`)
+            setProducts((currentProducts) => currentProducts.filter((product) => product.id !== id))
+            toast.success("Product deleted permanently")
+        } catch (error:any) {
+            toast.error(error.response?.data?.message || "Failed to delete product")
+        }
     };
 
     if (loading) return <Loading />
@@ -56,7 +85,7 @@ export default function AdminProducts() {
                                 </tr>
                             ) : (
                                 products.map(product => (
-                                    <tr key={product._id} className="hover:bg-zinc-50/50 transition-colors">
+                                    <tr key={product.id} className="hover:bg-zinc-50/50 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <img src={product.image} alt={product.name} className="size-12 rounded-lg object-cover" />
@@ -74,11 +103,14 @@ export default function AdminProducts() {
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
-                                                <Link to={`/admin/products/${product._id}/edit`} className="p-2 text-zinc-500 hover:text-app-orange bg-zinc-100 hover:bg-orange-50 rounded-lg transition-colors">
+                                                <Link to={`/admin/products/${product.id}/edit`} className="p-2 text-zinc-500 hover:text-app-orange bg-zinc-100 hover:bg-orange-50 rounded-lg transition-colors">
                                                     <EditIcon className="size-4" />
                                                 </Link>
-                                                <button onClick={() => handleMarkOutOfStock(product._id, product.name)} title="Mark Out of Stock" className="p-2 text-zinc-500 hover:text-red-600 bg-zinc-100 hover:bg-red-50 rounded-lg transition-colors">
+                                                <button disabled={product.stock <= 0} onClick={() => handleMarkOutOfStock(product.id, product.name)} title="Mark Out of Stock" className="p-2 text-zinc-500 hover:text-red-600 bg-zinc-100 hover:bg-red-50 rounded-lg transition-colors disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:text-zinc-500 disabled:hover:bg-zinc-100">
                                                     <XIcon className="size-4" />
+                                                </button>
+                                                <button onClick={() => handleDeleteProduct(product.id, product.name)} title="Delete Product Permanently" aria-label={`Delete ${product.name} permanently`} className="p-2 text-zinc-500 hover:text-red-700 bg-zinc-100 hover:bg-red-100 rounded-lg transition-colors">
+                                                    <Trash2Icon className="size-4" />
                                                 </button>
                                             </div>
                                         </td>

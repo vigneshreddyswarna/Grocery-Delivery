@@ -1,5 +1,5 @@
 import {Toaster} from 'react-hot-toast'
-import {Route,Routes} from 'react-router-dom'
+import {Navigate, Route,Routes} from 'react-router-dom'
 import Login from './pages/Login'
 import AppLayout from './pages/AppLayout'
 import Home from './pages/Home'
@@ -65,6 +65,8 @@ const App=()=>{
       <Route path='/delivery' element={<DeliveryLayout/>}>
         <Route index element={<DeliveryDashboard/>}/>
       </Route>
+
+      <Route path='*' element={<Navigate to='/' replace/>}/>
         
 
     </Routes>

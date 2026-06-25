@@ -1,4 +1,4 @@
-import { ChevronRightIcon, CreditCardIcon } from "lucide-react";
+import { ChevronRightIcon, CreditCardIcon, IndianRupeeIcon, SmartphoneIcon } from "lucide-react";
 import type { Dispatch, SetStateAction } from "react";
 
 interface CheckoutPaymentProps {
@@ -15,11 +15,13 @@ export default function CheckoutPayment({ setStep, paymentMethod, setPaymentMeth
             </h2>
             <div className="space-y-3">
                 {[
-                    { value: "card", label: "Credit / Debit Card", desc: "Pay securely with your card" },
-                    { value: "cash", label: "Cash on Delivery", desc: "Pay when you receive" },
+                    { value: "card", label: "Credit / Debit Card", desc: "Pay securely in Indian rupees", icon: CreditCardIcon },
+                    { value: "upi", label: "UPI", desc: "Pay with any UPI app", icon: SmartphoneIcon },
+                    { value: "cash", label: "Cash on Delivery", desc: "Pay in rupees when you receive", icon: IndianRupeeIcon },
                 ].map((method) => (
                     <label key={method.value} className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${paymentMethod === method.value ? "border-app-green bg-app-cream" : "border-app-border hover:border-app-green-lighter"}`}>
                         <input type="radio" name="payment" value={method.value} checked={paymentMethod === method.value} onChange={(e) => setPaymentMethod(e.target.value)} className="size-4 text-app-green" />
+                        <method.icon className="size-5 text-app-green" />
                         <div>
                             <p className="text-sm font-semibold text-app-green">{method.label}</p>
                             <p className="text-xs text-app-text-light">{method.desc}</p>

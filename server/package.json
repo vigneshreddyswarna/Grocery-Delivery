@@ -1,7 +1,7 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "",
+  "description": "Express, Prisma, Stripe, and email services for the FreshCart grocery delivery platform.",
   "main": "index.js",
   "scripts": {
     "postinstall": "npx prisma generate",
@@ -16,7 +16,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "type": "module",
   "dependencies": {
     "@prisma/adapter-neon": "^7.8.0",

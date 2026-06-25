@@ -11,7 +11,7 @@ interface Props {
 const ProductCard = ({ product }: Props) => {
     const safeProduct = normalizeProduct(product)
     const productId = getProductId(safeProduct)
-    const currency = import.meta.env.VITE_CURRENCY_SYMBOL || "Rs."
+    const currency = import.meta.env.VITE_CURRENCY_SYMBOL || "₹"
     const isOutOfStock = safeProduct.stock <= 0
 
     const { addToCart } = useCart()

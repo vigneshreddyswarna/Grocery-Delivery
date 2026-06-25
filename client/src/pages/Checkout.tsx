@@ -14,7 +14,7 @@ import { getErrorMessage } from "../utils/errors"
 
 const Checkout = () => {
   const navigate = useNavigate()
-  const currency = import.meta.env.VITE_CURRENCY_SYMBOL || "Rs."
+  const currency = import.meta.env.VITE_CURRENCY_SYMBOL || "₹"
 
   const { items, cartTotal,clearCart } = useCart()
   const { user } = useAuth()

@@ -67,6 +67,11 @@ export type Order = Prisma.OrderModel
  */
 export type DeliveryPartner = Prisma.DeliveryPartnerModel
 /**
+ * Model PendingDeliveryPartner
+ * 
+ */
+export type PendingDeliveryPartner = Prisma.PendingDeliveryPartnerModel
+/**
  * Model AuthToken
  * 
  */

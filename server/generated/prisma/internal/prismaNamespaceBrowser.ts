@@ -56,6 +56,7 @@ export const ModelName = {
   Product: 'Product',
   Order: 'Order',
   DeliveryPartner: 'DeliveryPartner',
+  PendingDeliveryPartner: 'PendingDeliveryPartner',
   AuthToken: 'AuthToken'
 } as const
 
@@ -167,6 +168,21 @@ export const DeliveryPartnerScalarFieldEnum = {
 } as const
 
 export type DeliveryPartnerScalarFieldEnum = (typeof DeliveryPartnerScalarFieldEnum)[keyof typeof DeliveryPartnerScalarFieldEnum]
+
+
+export const PendingDeliveryPartnerScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  email: 'email',
+  password: 'password',
+  phone: 'phone',
+  vehicleType: 'vehicleType',
+  otpHash: 'otpHash',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt'
+} as const
+
+export type PendingDeliveryPartnerScalarFieldEnum = (typeof PendingDeliveryPartnerScalarFieldEnum)[keyof typeof PendingDeliveryPartnerScalarFieldEnum]
 
 
 export const AuthTokenScalarFieldEnum = {

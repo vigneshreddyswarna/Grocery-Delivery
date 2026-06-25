@@ -389,6 +389,7 @@ export const ModelName = {
   Product: 'Product',
   Order: 'Order',
   DeliveryPartner: 'DeliveryPartner',
+  PendingDeliveryPartner: 'PendingDeliveryPartner',
   AuthToken: 'AuthToken'
 } as const
 
@@ -405,7 +406,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "address" | "product" | "order" | "deliveryPartner" | "authToken"
+    modelProps: "user" | "address" | "product" | "order" | "deliveryPartner" | "pendingDeliveryPartner" | "authToken"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -779,6 +780,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    PendingDeliveryPartner: {
+      payload: Prisma.$PendingDeliveryPartnerPayload<ExtArgs>
+      fields: Prisma.PendingDeliveryPartnerFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PendingDeliveryPartnerFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingDeliveryPartnerPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PendingDeliveryPartnerFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingDeliveryPartnerPayload>
+        }
+        findFirst: {
+          args: Prisma.PendingDeliveryPartnerFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingDeliveryPartnerPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PendingDeliveryPartnerFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingDeliveryPartnerPayload>
+        }
+        findMany: {
+          args: Prisma.PendingDeliveryPartnerFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingDeliveryPartnerPayload>[]
+        }
+        create: {
+          args: Prisma.PendingDeliveryPartnerCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingDeliveryPartnerPayload>
+        }
+        createMany: {
+          args: Prisma.PendingDeliveryPartnerCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PendingDeliveryPartnerCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingDeliveryPartnerPayload>[]
+        }
+        delete: {
+          args: Prisma.PendingDeliveryPartnerDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingDeliveryPartnerPayload>
+        }
+        update: {
+          args: Prisma.PendingDeliveryPartnerUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingDeliveryPartnerPayload>
+        }
+        deleteMany: {
+          args: Prisma.PendingDeliveryPartnerDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PendingDeliveryPartnerUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PendingDeliveryPartnerUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingDeliveryPartnerPayload>[]
+        }
+        upsert: {
+          args: Prisma.PendingDeliveryPartnerUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PendingDeliveryPartnerPayload>
+        }
+        aggregate: {
+          args: Prisma.PendingDeliveryPartnerAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePendingDeliveryPartner>
+        }
+        groupBy: {
+          args: Prisma.PendingDeliveryPartnerGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PendingDeliveryPartnerGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PendingDeliveryPartnerCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PendingDeliveryPartnerCountAggregateOutputType> | number
+        }
+      }
+    }
     AuthToken: {
       payload: Prisma.$AuthTokenPayload<ExtArgs>
       fields: Prisma.AuthTokenFieldRefs
@@ -984,6 +1059,21 @@ export const DeliveryPartnerScalarFieldEnum = {
 } as const
 
 export type DeliveryPartnerScalarFieldEnum = (typeof DeliveryPartnerScalarFieldEnum)[keyof typeof DeliveryPartnerScalarFieldEnum]
+
+
+export const PendingDeliveryPartnerScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  email: 'email',
+  password: 'password',
+  phone: 'phone',
+  vehicleType: 'vehicleType',
+  otpHash: 'otpHash',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt'
+} as const
+
+export type PendingDeliveryPartnerScalarFieldEnum = (typeof PendingDeliveryPartnerScalarFieldEnum)[keyof typeof PendingDeliveryPartnerScalarFieldEnum]
 
 
 export const AuthTokenScalarFieldEnum = {
@@ -1245,6 +1335,7 @@ export type GlobalOmitConfig = {
   product?: Prisma.ProductOmit
   order?: Prisma.OrderOmit
   deliveryPartner?: Prisma.DeliveryPartnerOmit
+  pendingDeliveryPartner?: Prisma.PendingDeliveryPartnerOmit
   authToken?: Prisma.AuthTokenOmit
 }
 

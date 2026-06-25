@@ -96,6 +96,18 @@ model DeliveryPartner {
   updatedAt   DateTime @updatedAt
 }
 
+model PendingDeliveryPartner {
+  id          String   @id @default(uuid())
+  name        String
+  email       String   @unique
+  password    String
+  phone       String
+  vehicleType String?  @default("bike")
+  otpHash     String
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+}
+
 model AuthToken {
   id                String           @id @default(uuid())
   tokenHash         String           @unique

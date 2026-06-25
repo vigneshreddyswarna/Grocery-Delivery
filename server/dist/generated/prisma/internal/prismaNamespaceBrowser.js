@@ -43,7 +43,8 @@ export const ModelName = {
     Address: 'Address',
     Product: 'Product',
     Order: 'Order',
-    DeliveryPartner: 'DeliveryPartner'
+    DeliveryPartner: 'DeliveryPartner',
+    AuthToken: 'AuthToken'
 };
 /*
  * Enums
@@ -59,6 +60,8 @@ export const UserScalarFieldEnum = {
     name: 'name',
     email: 'email',
     password: 'password',
+    role: 'role',
+    emailVerifiedAt: 'emailVerifiedAt',
     phone: 'phone',
     avatar: 'avatar',
     createdAt: 'createdAt',
@@ -122,8 +125,19 @@ export const DeliveryPartnerScalarFieldEnum = {
     avatar: 'avatar',
     vehicleType: 'vehicleType',
     isActive: 'isActive',
+    emailVerifiedAt: 'emailVerifiedAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
+};
+export const AuthTokenScalarFieldEnum = {
+    id: 'id',
+    tokenHash: 'tokenHash',
+    type: 'type',
+    expiresAt: 'expiresAt',
+    usedAt: 'usedAt',
+    userId: 'userId',
+    deliveryPartnerId: 'deliveryPartnerId',
+    createdAt: 'createdAt'
 };
 export const SortOrder = {
     asc: 'asc',

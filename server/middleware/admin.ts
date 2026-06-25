@@ -23,8 +23,8 @@ const admin=async(req: Request, res: Response, next: NextFunction)=>{
         
 
     } catch(error:any){
-        console.log(error)
-        res.status(500).json({message:"Admin verification failed",error:error.message})
+        if(process.env.NODE_ENV !== "test") console.error("Admin verification failed:", error)
+        res.status(500).json({message:"Admin verification failed"})
 
     }
 

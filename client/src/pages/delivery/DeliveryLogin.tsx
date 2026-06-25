@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BikeIcon } from "lucide-react";
+import { BikeIcon, LockIcon } from "lucide-react";
 import { heroSectionData } from "../../assets/assets";
 import api from "../../config/api";
 import toast from "react-hot-toast";
@@ -69,7 +69,7 @@ export default function DeliveryLogin() {
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-app-green mb-1.5">Password</label>
-                            <PasswordInput name="freshcartDeliveryLoginSecret" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-app-border text-sm transition-colors" placeholder="Password" />
+                            <PasswordInput name="freshcartDeliveryLoginSecret" required value={password} onChange={(e) => setPassword(e.target.value)} leadingIcon={<LockIcon className="size-4" />} className="w-full py-2.5 rounded-xl border border-app-border text-sm transition-colors" placeholder="Password" />
                             <Link to="/delivery/forgot-password" className="block mt-2 text-right text-xs text-orange-600">Forgot password?</Link>
                         </div>
                         <button type="submit" disabled={loading} className="w-full py-3 bg-app-green text-white font-semibold rounded-xl hover:bg-app-green-light transition-colors disabled:opacity-60">

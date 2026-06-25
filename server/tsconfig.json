@@ -11,9 +11,22 @@
         "forceConsistentCasingInFileNames": true
     },
     "include": [
-        "./**/*.ts"
+        "server.ts",
+        "seed.ts",
+        "prisma.config.ts",
+        "config/**/*.ts",
+        "controllers/**/*.ts",
+        "generated/**/*.ts",
+        "inngest/**/*.ts",
+        "middleware/**/*.ts",
+        "routes/**/*.ts",
+        "services/**/*.ts",
+        "types/**/*.d.ts",
+        "utils/**/*.ts"
     ],
     "exclude": [
-        "node_modules"
+        "node_modules",
+        "dist",
+        "tests"
     ]
 }

@@ -11,7 +11,6 @@ interface AuthContextType{
     loading:boolean
     login:(email:string,password:string)=>Promise<void>
     register:(name:string,email:string,password:string)=>Promise<void>
-    googleLogin:(credential:string)=>Promise<void>
     logout:()=>void
     updateUser:(userData:Partial<User>)=>void
 }
@@ -82,16 +81,6 @@ export function AuthProvider({children}:{children:ReactNode}){
         navigate(`/verify-email?email=${encodeURIComponent(data.email || email)}`)
     }
 
-    const googleLogin=async(credential:string)=>{
-        const {data}=await api.post('/auth/google',{credential})
-        const nextUser=normalizeUser(data.user)
-        setUser(nextUser); setToken(data.token)
-        setStoredValue("auth_token",data.token)
-        setStoredValue("auth_user",JSON.stringify(nextUser))
-        toast.success("Signed in with Google")
-        navigate('/')
-    }
-
     const logout=()=>{
         setUser(null)
         setToken(null)
@@ -108,7 +97,7 @@ export function AuthProvider({children}:{children:ReactNode}){
     }
 
     return <AuthContext.Provider value={{
-        user,token,loading,login,register,googleLogin,logout,updateUser
+        user,token,loading,login,register,logout,updateUser
     }}>
         {children}
 

@@ -1,5 +1,31 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/prisma.js";
+import { cleanString, isValidCoordinate } from "../utils/validation.js";
+
+const parseAddressCoordinates = (lat: unknown, lng: unknown) => {
+    if(lat == null || lng == null) return null
+    const nextLat = Number(lat)
+    const nextLng = Number(lng)
+    return isValidCoordinate(nextLat,"lat") && isValidCoordinate(nextLng,"lng")
+        ? {lat: nextLat, lng: nextLng}
+        : null
+}
+
+const parseAddressFields = (body: Record<string, unknown>, requireAllFields: boolean) => {
+    const parsed = {
+        label: cleanString(body.label,40),
+        address: cleanString(body.address,300),
+        city: cleanString(body.city,100),
+        state: cleanString(body.state,100),
+        zip: cleanString(body.zip,20),
+    }
+
+    if (requireAllFields && (!parsed.label || !parsed.address || !parsed.city || !parsed.state || !parsed.zip)) {
+        return null
+    }
+
+    return parsed
+}
 
 // Get user addresses
 // GET /api/addresses
@@ -16,11 +42,16 @@ export const getAddresses=async(req: Request, res: Response)=>{
 // Add address
 // POST /api/addresses
 export const addAddress=async(req: Request, res: Response)=>{
-    const {label,address,city,state,zip,isDefault,lat,lng}=req.body
+    const {isDefault,lat,lng}=req.body
 
     //Require coordinates
-    if(lat==null || lng==null){
-        return res.status(400).json({message:"Location coordinates are required. Please allow location access."})
+    const coordinates = parseAddressCoordinates(lat,lng)
+    if(!coordinates){
+        return res.status(400).json({message:"Valid location coordinates are required. Please allow location access."})
+    }
+    const addressFields = parseAddressFields(req.body, true)
+    if(!addressFields){
+        return res.status(400).json({message:"Label, address, city, state and ZIP are required"})
     }
     const currentAddresses=await prisma.address.findMany({
         where:{userId:req.user!.id},
@@ -38,14 +69,10 @@ export const addAddress=async(req: Request, res: Response)=>{
     await prisma.address.create({
         data:{
             userId: req.user!.id,
-            label,
-            address,
-            city,
-            state,
-            zip,
+            ...addressFields,
             isDefault: makeDefault,
-            lat: Number(lat),
-            lng: Number(lng)
+            lat: coordinates.lat,
+            lng: coordinates.lng
         }
     })
 
@@ -59,11 +86,12 @@ export const addAddress=async(req: Request, res: Response)=>{
 // Update address
 // PUT /api/addresses/:id
 export const updateAddress=async(req:Request, res: Response)=>{
-    const {label,address,city,state,zip,isDefault,lat,lng}=req.body
+    const {isDefault,lat,lng}=req.body
 
     //Require coordinates
-    if(lat==null || lng==null){
-        return res.status(400).json({message:"Location coordinates are required. Please allow location access."})
+    const coordinates = parseAddressCoordinates(lat,lng)
+    if(!coordinates){
+        return res.status(400).json({message:"Valid location coordinates are required. Please allow location access."})
     }
 
     const existingAddress = await prisma.address.findFirst({
@@ -81,14 +109,15 @@ export const updateAddress=async(req:Request, res: Response)=>{
     }
 
     const data:any={}
-    if(label) data.label=label
-    if(address) data.address=address
-    if(city) data.city=city
-    if(state) data.state=state
-    if(zip) data.zip=zip
+    const addressFields = parseAddressFields(req.body, false)
+    if(addressFields?.label) data.label=addressFields.label
+    if(addressFields?.address) data.address=addressFields.address
+    if(addressFields?.city) data.city=addressFields.city
+    if(addressFields?.state) data.state=addressFields.state
+    if(addressFields?.zip) data.zip=addressFields.zip
     if(isDefault!==undefined) data.isDefault=isDefault
-    if(lat!=null) data.lat=Number(lat)
-    if(lng!=null) data.lng=Number(lng)
+    data.lat=coordinates.lat
+    data.lng=coordinates.lng
 
     await prisma.address.update({
         where:{id:existingAddress.id},

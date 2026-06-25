@@ -34,8 +34,8 @@ const isPrivateNetworkOrigin = (origin) => {
 app.use(cors({
     origin: (origin, callback) => {
         if (!origin
-            || allowedOrigins.length === 0
             || allowedOrigins.includes(origin)
+            || (!isProduction && allowedOrigins.length === 0)
             || (!isProduction && isPrivateNetworkOrigin(origin))) {
             return callback(null, true);
         }
@@ -59,7 +59,8 @@ app.use('/api/delivery', deliveryPartnerRouter);
 // Error handling
 app.use((error, req, res, next) => {
     console.error(error);
-    res.status(500).json({ message: error.message });
+    const message = process.env.NODE_ENV === "production" ? "Internal server error" : error.message;
+    res.status(500).json({ message });
 });
 if (process.env.VERCEL !== "1") {
     app.listen(port, () => {

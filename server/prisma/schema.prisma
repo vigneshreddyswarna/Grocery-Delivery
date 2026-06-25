@@ -14,7 +14,6 @@ model User {
   password  String?
   role      String    @default("CUSTOMER")
   emailVerifiedAt DateTime?
-  googleId  String?   @unique
   phone     String?   @default("")
   avatar    String?   @default("")
   addresses Address[]

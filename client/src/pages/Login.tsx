@@ -110,18 +110,9 @@ import { Link } from "react-router-dom"
 import { BikeIcon, Loader2Icon, LockIcon, MailIcon, UserIcon } from "lucide-react"
 import { useAuth } from "../context/AuthContext"
 import toast from "react-hot-toast"
-import GoogleSignIn from "../components/GoogleSignIn"
 import PasswordInput from "../components/PasswordInput"
 import AutofillSafeInput from "../components/AutofillSafeInput"
-
-const getErrorMessage = (error: unknown) => {
-    if (error instanceof Error) return error.message
-    if (typeof error === "object" && error !== null && "response" in error) {
-        const response = (error as { response?: { data?: { message?: string } } }).response
-        return response?.data?.message || "Something went wrong"
-    }
-    return "Something went wrong"
-}
+import { getErrorMessage } from "../utils/errors"
 
 const Login = () => {
     const [isLoginState, setIsLoginState] = useState(true)
@@ -141,7 +132,7 @@ const Login = () => {
                 await register(name, email, password)
             }
         } catch (error: unknown) {
-            toast.error(getErrorMessage(error))
+            toast.error(getErrorMessage(error, "Signup failed. Please try again."))
         } finally {
             setLoading(false)
         }
@@ -231,7 +222,6 @@ const Login = () => {
                         <label className="block text-sm font-medium text-gray-700">
                             Password
                             <div className="relative mt-1">
-                                <LockIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-app-text-light" />
                                 <PasswordInput
                                     name={isLoginState ? "freshcartCustomerLoginSecret" : "freshcartCustomerSignupSecret"}
                                     value={password} 
@@ -242,7 +232,8 @@ const Login = () => {
                                     title={isLoginState ? undefined : "Use at least 8 characters with a letter and number"}
                                     autoComplete={isLoginState ? "current-password" : "new-password"}
                                     placeholder="........" 
-                                    className="w-full pl-11 py-3 text-sm bg-white rounded-xl border border-gray-300 focus:border-app-green outline-none transition-all" 
+                                    leadingIcon={<LockIcon className="size-4" />}
+                                    className="w-full py-3 text-sm bg-white rounded-xl border border-gray-300 focus:border-app-green outline-none transition-all" 
                                 />
                             </div>
                             {!isLoginState && <span className="mt-1 block text-xs font-normal text-app-text-light">At least 8 characters with a letter and number</span>}
@@ -256,8 +247,6 @@ const Login = () => {
                             {loading ? <Loader2Icon className="animate-spin size-5" /> : isLoginState ? "Sign In" : "Sign Up"}
                         </button>
                     </form>
-                    <div className="flex items-center gap-3 my-5"><span className="h-px bg-app-border flex-1"/><span className="text-xs text-app-text-light">OR</span><span className="h-px bg-app-border flex-1"/></div>
-                    <GoogleSignIn />
                 </div>
             </div>
         </div>

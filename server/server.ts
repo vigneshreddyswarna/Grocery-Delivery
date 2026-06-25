@@ -70,7 +70,8 @@ app.use('/api/delivery',deliveryPartnerRouter)
 
 app.use((error: any, req: Request, res: Response, next: NextFunction)=>{
     console.error(error)
-    res.status(500).json({message:error.message})
+    const message = process.env.NODE_ENV === "production" ? "Internal server error" : error.message
+    res.status(500).json({message})
 
 })
 

@@ -3,7 +3,7 @@ import { prisma } from "../config/prisma.js"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import { isAdminEmail } from "../config/admin.js"
-import { AUTH_TOKEN_TYPES, consumeUserAuthToken, createUserAuthToken } from "../services/authToken.js"
+import { AUTH_TOKEN_TYPES, consumeUserAuthToken, createUserAuthToken, createVerificationOtp } from "../services/authToken.js"
 import { sendPasswordResetEmail, sendVerificationEmail } from "../services/authEmail.js"
 import { cleanString, isValidEmail } from "../utils/validation.js"
 
@@ -29,27 +29,29 @@ export const register=async(req:Request,res:Response)=>{
     const existing=await prisma.user.findUnique({where:{email}})
     if(existing){
         if(!existing.emailVerifiedAt){
-            const verificationToken=await createUserAuthToken(existing.id,AUTH_TOKEN_TYPES.VERIFY_EMAIL,24*60)
+            const verificationToken=createVerificationOtp()
+            await createUserAuthToken(existing.id,AUTH_TOKEN_TYPES.VERIFY_EMAIL,15,verificationToken)
             try{await sendVerificationEmail(existing.email,existing.name,verificationToken)}catch{
                 return res.status(200).json({verificationRequired:true,email:existing.email,message:"Account exists, but the verification email could not be sent. Check SMTP configuration."})
             }
-            return res.status(200).json({verificationRequired:true,email:existing.email,message:"Account already created. We sent a new verification email."})
+            return res.status(200).json({verificationRequired:true,email:existing.email,message:"Account already created. We sent a new verification code."})
         }
         return res.status(409).json({message:"An account already exists with this email"})
     }
 
     const user=await prisma.user.create({data:{name,email,password:await bcrypt.hash(password,12)}})
-    const verificationToken=await createUserAuthToken(user.id,AUTH_TOKEN_TYPES.VERIFY_EMAIL,24*60)
+    const verificationToken=createVerificationOtp()
+    await createUserAuthToken(user.id,AUTH_TOKEN_TYPES.VERIFY_EMAIL,15,verificationToken)
     try{ await sendVerificationEmail(user.email,user.name,verificationToken) }
     catch{ return res.status(201).json({verificationRequired:true,email:user.email,message:"Account created, but the verification email could not be sent. Request a new one."}) }
 
-    return res.status(201).json({verificationRequired:true,email:user.email,message:"Check your email to verify your account"})
+    return res.status(201).json({verificationRequired:true,email:user.email,message:"Check your email for the verification code"})
 }
 
 export const verifyEmail=async(req:Request,res:Response)=>{
-    const token=cleanString(req.body.token,128)
+    const token=cleanString(req.body.otp ?? req.body.token,16)
     const userId=await consumeUserAuthToken(token,AUTH_TOKEN_TYPES.VERIFY_EMAIL)
-    if(!userId) return res.status(400).json({message:"Verification link is invalid or expired"})
+    if(!userId) return res.status(400).json({message:"Verification code is invalid or expired"})
     const user=await prisma.user.update({where:{id:userId},data:{emailVerifiedAt:new Date()},include:{addresses:true}})
     return res.json({user:publicUser(user),token:generateToken(user.id),message:"Email verified"})
 }
@@ -58,10 +60,11 @@ export const resendVerification=async(req:Request,res:Response)=>{
     const email=cleanString(req.body.email,254).toLowerCase()
     const user=isValidEmail(email) ? await prisma.user.findUnique({where:{email}}) : null
     if(user && !user.emailVerifiedAt){
-        const token=await createUserAuthToken(user.id,AUTH_TOKEN_TYPES.VERIFY_EMAIL,24*60)
+        const token=createVerificationOtp()
+        await createUserAuthToken(user.id,AUTH_TOKEN_TYPES.VERIFY_EMAIL,15,token)
         await sendVerificationEmail(user.email,user.name,token)
     }
-    return res.json({message:"If the account needs verification, a new email has been sent"})
+    return res.json({message:"If the account needs verification, a new code has been sent"})
 }
 
 export const login=async(req:Request,res:Response)=>{
@@ -97,30 +100,6 @@ export const resetPassword=async(req:Request,res:Response)=>{
     if(!userId) return res.status(400).json({message:"Reset link is invalid or expired"})
     await prisma.user.update({where:{id:userId},data:{password:await bcrypt.hash(password,12)}})
     return res.json({message:"Password reset successfully"})
-}
-
-export const googleLogin=async(req:Request,res:Response)=>{
-    const credential=cleanString(req.body.credential,5000)
-    const clientId=process.env.GOOGLE_CLIENT_ID
-    if(!credential || !clientId) return res.status(503).json({message:"Google sign-in is unavailable"})
-
-    const googleResponse=await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`)
-    if(!googleResponse.ok) return res.status(401).json({message:"Invalid Google credential"})
-    const profile=await googleResponse.json() as {aud?:string,sub?:string,email?:string,email_verified?:string,name?:string}
-    if(profile.aud !== clientId || profile.email_verified !== "true" || !profile.sub || !profile.email)
-        return res.status(401).json({message:"Google account could not be verified"})
-
-    const email=profile.email.toLowerCase()
-    if(isAdminEmail(email)) return res.status(403).json({message:"Use the admin sign-in method"})
-    let user=await prisma.user.findUnique({where:{email},include:{addresses:true}})
-    if(user && user.googleId && user.googleId !== profile.sub)
-        return res.status(409).json({message:"This email is linked to another Google account"})
-    if(user){
-        user=await prisma.user.update({where:{id:user.id},data:{googleId:profile.sub,emailVerifiedAt:user.emailVerifiedAt || new Date()},include:{addresses:true}})
-    }else{
-        user=await prisma.user.create({data:{name:cleanString(profile.name,100) || "Google user",email,googleId:profile.sub,emailVerifiedAt:new Date()},include:{addresses:true}})
-    }
-    return res.json({user:publicUser(user),token:generateToken(user.id)})
 }
 
 export const getMe=async(req:Request,res:Response)=>{

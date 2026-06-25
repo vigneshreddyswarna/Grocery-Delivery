@@ -6,6 +6,18 @@ type PaidOrderItem = {
     quantity: number
 }
 
+export const restoreOrderStock = async (
+    itemsValue: unknown,
+    productClient: { update: (args: {where:{id:string},data:{stock:{increment:number}}}) => Promise<unknown> },
+) => {
+    const items = (Array.isArray(itemsValue) ? itemsValue : []) as PaidOrderItem[]
+    for (const item of items) {
+        if (typeof item.product === "string" && Number.isInteger(Number(item.quantity)) && Number(item.quantity) > 0) {
+            await productClient.update({where:{id:item.product},data:{stock:{increment:Number(item.quantity)}}})
+        }
+    }
+}
+
 export const fulfillPaidOrder = async (orderId: string) => {
     const claimed = await prisma.order.updateMany({
             where: {id: orderId, isPaid: false},
@@ -33,9 +45,8 @@ export const releaseUnpaidOrder = async (orderId: string) => {
         const deleted = await tx.order.deleteMany({where:{id:orderId,isPaid:false}})
         if(deleted.count === 0) return false
 
-        const items=(Array.isArray(order.items) ? order.items : []) as PaidOrderItem[]
-        for(const item of items){
-            await tx.product.update({where:{id:item.product},data:{stock:{increment:item.quantity}}})
+        if (order.status !== "Cancelled") {
+            await restoreOrderStock(order.items, tx.product)
         }
         return true
     })

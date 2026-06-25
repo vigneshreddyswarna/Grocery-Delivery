@@ -29,7 +29,7 @@ export const stripeWebhook = async (request: Request, response: Response) => {
         );
     } catch (error) {
         const message = error instanceof Error ? error.message : "Unknown error";
-        console.log("Webhook signature verification failed.", message);
+        console.warn("Webhook signature verification failed.", message);
         return response.sendStatus(400);
     }
 
@@ -55,7 +55,9 @@ export const stripeWebhook = async (request: Request, response: Response) => {
         }
 
         default:
-            console.log(`Unhandled event type ${event.type}`);
+            if (process.env.NODE_ENV !== "production") {
+                console.info(`Unhandled event type ${event.type}`);
+            }
     }
 
     return response.json({ received: true });

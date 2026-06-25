@@ -4,12 +4,14 @@ import bcrypt from 'bcrypt'
 import jwt from "jsonwebtoken";
 import { canTransitionOrder, type OrderStatus } from "../utils/orderStatus.js";
 import { cleanString, isValidCoordinate, isValidEmail } from "../utils/validation.js";
-import { AUTH_TOKEN_TYPES, consumePartnerAuthToken, createPartnerAuthToken } from "../services/authToken.js";
+import { AUTH_TOKEN_TYPES, consumePartnerAuthToken, createPartnerAuthToken, createVerificationOtp } from "../services/authToken.js";
 import { sendPartnerPasswordResetEmail, sendPartnerVerificationEmail } from "../services/authEmail.js";
+import { restoreOrderStock } from "../services/orderPayment.js";
 
 
 const generateToken=(id:string)=>{
-    return jwt.sign({id,role:"delivery"},process.env.JWT_SECRET as string,{expiresIn:"30d"})
+    if(!process.env.JWT_SECRET) throw new Error("JWT_SECRET is not configured")
+    return jwt.sign({id,role:"delivery"},process.env.JWT_SECRET,{expiresIn:"30d"})
 }
 
 // Login Delivery Partner
@@ -136,9 +138,13 @@ export const cancelDelivery=async(req:Request,res:Response)=>{
 
     history.push({status:"Cancelled", note:reason || "",timestamp:new Date()})
 
-    const updatedOrder =await prisma.order.update({
-        where:{id:order.id},
-        data:{status:"Cancelled", statusHistory:history, liveLocation:{isSharing:false}}
+    const updatedOrder = await prisma.$transaction(async(tx)=>{
+        const updated = await tx.order.update({
+            where:{id:order.id},
+            data:{status:"Cancelled", statusHistory:history, liveLocation:{isSharing:false}}
+        })
+        await restoreOrderStock(order.items, tx.product)
+        return updated
     })
 
     res.json({order:updatedOrder,message:"Delivery cancelled"})
@@ -214,9 +220,9 @@ export const updateLocation=async(req:Request,res:Response)=>{
 }
 
 export const verifyPartnerEmail=async(req:Request,res:Response)=>{
-    const token=cleanString(req.body.token,128)
+    const token=cleanString(req.body.otp ?? req.body.token,16)
     const partnerId=await consumePartnerAuthToken(token,AUTH_TOKEN_TYPES.VERIFY_EMAIL)
-    if(!partnerId) return res.status(400).json({message:"Verification link is invalid or expired"})
+    if(!partnerId) return res.status(400).json({message:"Verification code is invalid or expired"})
     await prisma.deliveryPartner.update({where:{id:partnerId},data:{emailVerifiedAt:new Date()}})
     return res.json({message:"Email verified. You can now sign in."})
 }
@@ -225,10 +231,11 @@ export const resendPartnerVerification=async(req:Request,res:Response)=>{
     const email=cleanString(req.body.email,254).toLowerCase()
     const partner=isValidEmail(email) ? await prisma.deliveryPartner.findUnique({where:{email}}) : null
     if(partner && !partner.emailVerifiedAt){
-        const token=await createPartnerAuthToken(partner.id,AUTH_TOKEN_TYPES.VERIFY_EMAIL,24*60)
+        const token=createVerificationOtp()
+        await createPartnerAuthToken(partner.id,AUTH_TOKEN_TYPES.VERIFY_EMAIL,15,token)
         await sendPartnerVerificationEmail(partner.email,partner.name,token)
     }
-    return res.json({message:"If the account needs verification, a new email has been sent"})
+    return res.json({message:"If the account needs verification, a new code has been sent"})
 }
 
 export const forgotPartnerPassword=async(req:Request,res:Response)=>{

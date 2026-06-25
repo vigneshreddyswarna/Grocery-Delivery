@@ -20,8 +20,9 @@ const admin = async (req, res, next) => {
         }
     }
     catch (error) {
-        console.log(error);
-        res.status(500).json({ message: "Admin verification failed", error: error.message });
+        if (process.env.NODE_ENV !== "test")
+            console.error("Admin verification failed:", error);
+        res.status(500).json({ message: "Admin verification failed" });
     }
 };
 export default admin;

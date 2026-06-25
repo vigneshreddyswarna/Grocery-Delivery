@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { prisma } from "../config/prisma.js";
 import { inngest } from "../inngest/index.js";
 import Stripe from 'stripe'
-import { fulfillPaidOrder, releaseUnpaidOrder } from "../services/orderPayment.js";
+import { fulfillPaidOrder, releaseUnpaidOrder, restoreOrderStock } from "../services/orderPayment.js";
 import { canTransitionOrder, isOrderStatus } from "../utils/orderStatus.js";
 import { cleanString, isPositiveInteger, isValidCoordinate } from "../utils/validation.js";
 
@@ -241,10 +241,19 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
     const history = (Array.isArray(order.statusHistory) ? order.statusHistory : []) as any[]
     history.push({ status, note: note || `Order ${status.toLowerCase()}`, timestamp: new Date() })
 
-    const updatedOrder = await prisma.order.update({
-        where: { id: req.params.id as string },
-        data: { status, statusHistory: history }
-    })
+    const updatedOrder = status === "Cancelled"
+        ? await prisma.$transaction(async(tx)=>{
+            const updated = await tx.order.update({
+                where: { id: req.params.id as string },
+                data: { status, statusHistory: history, liveLocation:{isSharing:false} }
+            })
+            await restoreOrderStock(order.items, tx.product)
+            return updated
+        })
+        : await prisma.order.update({
+            where: { id: req.params.id as string },
+            data: { status, statusHistory: history }
+        })
     res.json({ order: updatedOrder })
 }
 

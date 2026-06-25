@@ -1,6 +1,16 @@
 //get admin dashboard data
 import { prisma } from "../config/prisma.js";
 import bcrypt from 'bcrypt';
+import { randomInt } from "node:crypto";
+import { canTransitionOrder } from "../utils/orderStatus.js";
+import { cleanString, isValidEmail } from "../utils/validation.js";
+import { AUTH_TOKEN_TYPES, createPartnerAuthToken, createVerificationOtp } from "../services/authToken.js";
+import { sendPartnerVerificationEmail } from "../services/authEmail.js";
+const publicPartnerSelect = {
+    id: true, name: true, email: true, phone: true, avatar: true, vehicleType: true,
+    isActive: true, createdAt: true, updatedAt: true
+};
+const isPrismaUniqueError = (error) => typeof error === "object" && error !== null && "code" in error && error.code === "P2002";
 export const getAdminStats = async (req, res) => {
     const [totalOrders, totalUsers, totalProducts, outOfStock, totalPartners, recentOrders] = await Promise.all([
         prisma.order.count({ where: { NOT: [{ paymentMethod: { in: ["card", "upi"] }, isPaid: false }] } }),
@@ -21,41 +31,68 @@ export const getAdminStats = async (req, res) => {
 };
 // get delivery partners list for admin
 export const getDeliveryPartners = async (req, res) => {
-    const partners = await prisma.deliveryPartner.findMany({ orderBy: { createdAt: "desc" } });
+    const partners = await prisma.deliveryPartner.findMany({
+        orderBy: { createdAt: "desc" }, select: publicPartnerSelect
+    });
     res.json({ partners });
 };
 // create delivery partner profile
 export const createDeliveryPartner = async (req, res) => {
-    const { name, email, password, phone, vehicleType } = req.body;
-    if (!name || !email || !password || !phone) {
-        res.status(400).json({ message: "Please provide all required fields" });
+    const name = cleanString(req.body.name, 100);
+    const email = cleanString(req.body.email, 254).toLowerCase();
+    const password = typeof req.body.password === "string" ? req.body.password : "";
+    const phone = cleanString(req.body.phone, 30);
+    const vehicleType = cleanString(req.body.vehicleType, 30) || "bike";
+    if (!name || !isValidEmail(email) || password.length < 8 || !phone) {
+        res.status(400).json({ message: "Provide a valid name, email, phone and password of at least 8 characters" });
         return;
     }
     const hashedPassword = await bcrypt.hash(password, 10);
-    const partner = await prisma.deliveryPartner.create({
-        data: { name, email: email.toLowerCase(), password: hashedPassword, phone, vehicleType }
-    });
+    let partner;
+    try {
+        partner = await prisma.deliveryPartner.create({
+            data: { name, email, password: hashedPassword, phone, vehicleType },
+            select: publicPartnerSelect
+        });
+    }
+    catch (error) {
+        if (isPrismaUniqueError(error))
+            return res.status(409).json({ message: "A delivery partner already exists with this email" });
+        throw error;
+    }
+    const verificationToken = createVerificationOtp();
+    await createPartnerAuthToken(partner.id, AUTH_TOKEN_TYPES.VERIFY_EMAIL, 15, verificationToken);
+    await sendPartnerVerificationEmail(partner.email, partner.name, verificationToken);
     res.status(201).json({ partner });
 };
 // update delivery partner profile
 export const updateDeliveryPartner = async (req, res) => {
     const { name, phone, vehicleType, isActive } = req.body;
     const data = {};
-    if (name)
-        data.name = name;
-    if (phone)
-        data.phone = phone;
-    if (vehicleType)
-        data.vehicleType = vehicleType;
-    data.isActive = isActive;
+    const nextName = cleanString(name, 100);
+    const nextPhone = cleanString(phone, 30);
+    const nextVehicleType = cleanString(vehicleType, 30);
+    if (nextName)
+        data.name = nextName;
+    if (nextPhone)
+        data.phone = nextPhone;
+    if (nextVehicleType)
+        data.vehicleType = nextVehicleType;
+    if (typeof isActive === "boolean")
+        data.isActive = isActive;
+    if (Object.keys(data).length === 0)
+        return res.status(400).json({ message: "Provide at least one valid partner field to update" });
     try {
         const partner = await prisma.deliveryPartner.update({
             where: { id: req.params.id },
-            data
+            data,
+            select: publicPartnerSelect
         });
         res.json({ partner });
     }
     catch (error) {
+        if (isPrismaUniqueError(error))
+            return res.status(409).json({ message: "A delivery partner already exists with this email" });
         res.status(404).json({ message: "Partner not found" });
     }
 };
@@ -65,13 +102,21 @@ export const assignDeliveryPartner = async (req, res) => {
     const order = await prisma.order.findUnique({
         where: { id: req.params.id }
     });
+    if (!order)
+        return res.status(404).json({ message: "Order not found" });
+    if (["Delivered", "Cancelled"].includes(order.status)) {
+        return res.status(409).json({ message: `A ${order.status.toLowerCase()} order cannot be assigned` });
+    }
     const partner = await prisma.deliveryPartner.findUnique({
         where: { id: partnerId }
     });
-    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    if (!partner || !partner.isActive) {
+        return res.status(400).json({ message: "Select an active delivery partner" });
+    }
+    const otp = String(randomInt(100000, 1000000));
     let status = order.status;
-    const history = Array.isArray(order.statusHistory) ? order.statusHistory : [];
-    if (order.status === "Placed" || order.status === "Confirmed") {
+    const history = Array.isArray(order.statusHistory) ? [...order.statusHistory] : [];
+    if (canTransitionOrder(order.status, "Assigned")) {
         status = "Assigned";
         history.push({
             status: "Assigned",
@@ -82,5 +127,5 @@ export const assignDeliveryPartner = async (req, res) => {
         where: { id: order.id },
         data: { deliveryPartnerId: partner.id, deliveryOtp: otp, status, statusHistory: history }
     });
-    res.json({ order });
+    res.json({ message: "Delivery partner assigned" });
 };

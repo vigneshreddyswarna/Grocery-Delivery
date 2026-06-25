@@ -14,7 +14,7 @@ import { getErrorMessage } from "../utils/errors"
 
 const Checkout = () => {
   const navigate = useNavigate()
-  const currency = import.meta.env.VITE_CURRENCY_SYMBOL || '₹'
+  const currency = import.meta.env.VITE_CURRENCY_SYMBOL || "Rs."
 
   const { items, cartTotal,clearCart } = useCart()
   const { user } = useAuth()
@@ -58,7 +58,6 @@ const Checkout = () => {
         paymentMethod
       }
       const {data}=await api.post('/orders',orderData)
-      console.log(data)
       if(data.url){
         window.location.href=data.url
         return

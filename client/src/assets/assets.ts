@@ -1,5 +1,4 @@
-import { TruckIcon, LeafIcon, ClockIcon, ShieldCheckIcon, MapPinIcon, PhoneIcon, MailIcon } from "lucide-react";
-import { SiFacebook, SiX, SiInstagram } from "@icons-pack/react-simple-icons";
+import { TruckIcon, LeafIcon, ClockIcon, ShieldCheckIcon, Code2Icon, ExternalLinkIcon } from "lucide-react";
 import hero_bg from "./hero_bg.webp";
 import delivery_truck from "./delivery_truck.svg";
 import fruits_vegetables from "./fruits_vegetables.webp";
@@ -53,11 +52,6 @@ export const footerData = {
     brand: {
         name: "FreshCart",
         description: "Bringing fresh, organic groceries straight from local farms to your doorstep. Nourish your home with Earth's finest.",
-        socials: [
-            { icon: SiFacebook, link: "#" },
-            { icon: SiX, link: "#" },
-            { icon: SiInstagram, link: "#" },
-        ],
     },
 
     sections: [
@@ -71,28 +65,23 @@ export const footerData = {
             ],
         },
         {
-            title: "Customer Service",
+            title: "Your Account",
             links: [
-                { label: "My Account", to: "#" },
-                { label: "Order History", to: "#" },
-                { label: "Addresses", to: "#" },
-                { label: "Help Center", href: "#" },
+                { label: "Sign in", to: "/login" },
+                { label: "Order History", to: "/orders" },
+                { label: "Saved Addresses", to: "/addresses" },
+                { label: "Delivery Login", to: "/delivery/login" },
             ],
         },
     ],
 
     contact: [
-        { icon: MapPinIcon, text: "MG Road, Bengaluru" },
-        { icon: PhoneIcon, text: "+91 98765 43210" },
-        { icon: MailIcon, text: "hello@example.com" },
+        { icon: Code2Icon, text: "Source code", href: "https://github.com/vigneshreddyswarna/Grocery-Delivery" },
+        { icon: ExternalLinkIcon, text: "API health", href: "https://grocery-delivery-api-omega.vercel.app" },
     ],
 
     bottom: {
-        copyright: "© 2026 Greatstack. All rights reserved.",
-        links: [
-            { label: "Privacy Policy", href: "#" },
-            { label: "Terms of Service", href: "#" },
-        ],
+        copyright: "© 2026 FreshCart. Open-source portfolio project.",
     },
 };
 

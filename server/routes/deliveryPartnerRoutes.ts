@@ -1,6 +1,6 @@
 import express from 'express'
 import { cancelDelivery, completeDelivery, forgotPartnerPassword, getCurrentPartner, getDeliveryDetail, getMyDeliveries, loginPartner, resendPartnerVerification, resetPartnerPassword, updateDeliveryStatus, updateLocation, verifyPartnerEmail } from '../controllers/deliveryPartnerController.js'
-import deliveryAuth from '../middleware/deiveryAuth.js'
+import deliveryAuth from '../middleware/deliveryAuth.js'
 
 const deliveryPartnerRouter=express.Router()
 

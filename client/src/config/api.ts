@@ -24,7 +24,7 @@ const api=axios.create({
     baseURL: API_BASE_URL
 })
 
-// Inject JWT token from localStorage into evry request
+// Inject the appropriate JWT into every authenticated request.
 
 api.interceptors.request.use((config)=>{
     const isDeliveryRequest=config.url?.startsWith("/delivery")

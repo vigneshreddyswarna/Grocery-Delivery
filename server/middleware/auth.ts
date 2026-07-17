@@ -8,12 +8,10 @@ const getJwtSecret = () => {
 
 const auth=(req: Request, res: Response, next: NextFunction)=>{
     try{
-        const authHeader=req.headers.authorization
-
-        if(!authHeader || !authHeader.startsWith('Bearer')){
+        const [scheme, token]=req.headers.authorization?.split(" ") ?? []
+        if(scheme !== "Bearer" || !token){
             return res.status(401).json({message:"No token provided,authorization denied"})
         }
-        const token=authHeader.split(" ")[1]
         const decoded=jwt.verify(token,getJwtSecret()) as {id: string, role?: string}
 
         if(decoded.role !== "customer"){

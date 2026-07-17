@@ -190,8 +190,15 @@ This runs:
 
 - Client lint
 - Client production build
+- Client unit tests
 - Server TypeScript typecheck
 - Server build
+- Server tests
+
+GitHub Actions runs the same verification pipeline for every pull request and every push to `main`. Concurrent outdated runs are cancelled automatically.
+
+Dependabot checks frontend, backend, and GitHub Actions dependencies. CodeQL performs JavaScript and TypeScript security analysis on pull requests, pushes to `main`, and a weekly schedule.
+CI also blocks merges when production dependencies contain known high- or critical-severity vulnerabilities.
 
 ## Deployment
 
@@ -223,6 +230,8 @@ VITE_CURRENCY_SYMBOL=₹
 - OTPs are stored as hashes, not plain text.
 - Payment completion is handled through Stripe webhooks.
 - Admin access is controlled through the `ADMIN_EMAILS` environment variable.
+- API responses include restrictive security headers and requests are rate-limited per client.
+- Authentication middleware requires an exact `Bearer <token>` authorization scheme and enforces account roles.
 
 ## License
 

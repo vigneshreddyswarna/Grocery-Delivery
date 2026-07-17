@@ -11,8 +11,14 @@ import addressRouter from "./routes/addressRoutes.js";
 import adminRouter from "./routes/adminRoutes.js";
 import deliveryPartnerRouter from "./routes/deliveryPartnerRoutes.js";
 import { stripeWebhook } from "./controllers/webhooks.js";
+import { rateLimit, securityHeaders } from "./middleware/security.js";
 
 const app = express();
+
+app.disable("x-powered-by")
+app.set("trust proxy", 1)
+app.use(securityHeaders)
+app.use(rateLimit)
 
 app.post("/api/stripe",express.raw({type:'application/json'}),stripeWebhook)
 

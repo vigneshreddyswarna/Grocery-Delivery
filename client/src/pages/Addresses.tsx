@@ -8,6 +8,7 @@ import { useAuth } from "../context/AuthContext"
 import api from "../config/api"
 import toast from "react-hot-toast"
 import { ADDRESS_API } from "../config/routes"
+import { geocodeIndianAddress, isIndianPincode, isPointInIndia } from "../utils/indiaGeocoding"
 
 const Addresses = () => {
   const { updateUser } = useAuth()
@@ -53,31 +54,20 @@ const Addresses = () => {
       .filter((item) => item.id)
 
   const geocodeAddress = async (): Promise<{ lat: number; lng: number }> => {
-    const query = [form.address, form.city, form.state, form.zip].filter(Boolean).join(", ")
-    if (!query) throw new Error("Enter a delivery address before saving")
-
-    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`)
-    if (!response.ok) throw new Error("Unable to find this address on the map")
-
-    const results = await response.json()
-    const match = Array.isArray(results) ? results[0] : null
-    if (!match?.lat || !match?.lon) throw new Error("Unable to find this address on the map")
-
-    return {
-      lat: Number(match.lat),
-      lng: Number(match.lon)
-    }
+    return geocodeIndianAddress(form)
   }
 
   // Fixed: Corrected React event type signature to handle HTML form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     try {
+      if (!isIndianPincode(form.zip)) throw new Error("Enter a valid 6-digit Indian PIN code")
       const hasValidProvidedCoords = Number.isFinite(Number(form.lat)) && Number.isFinite(Number(form.lng))
       const shouldUseAddressMapPoint = form.mapLocationSource === "address" || !hasValidProvidedCoords
       const coords = shouldUseAddressMapPoint
         ? await geocodeAddress()
         : { lat: Number(form.lat), lng: Number(form.lng) }
+      if (!isPointInIndia(coords.lat, coords.lng)) throw new Error("The selected map point must be within India")
       const payload = {
         label: form.label,
         address: form.address,

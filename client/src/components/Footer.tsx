@@ -19,12 +19,6 @@ const Footer = () => {
 
                         <p className="text-sm text-white/70 mb-4">{footerData.brand.description}</p>
 
-                        <div className="flex gap-3">
-                            {footerData.brand.socials.map((social, i) => (
-                                <a key={i} href={social.link} className="size-9 rounded-lg bg-white/10 flex-center hover:bg-white/2"><social.icon className="size-4" /></a>
-                            ))}
-
-                        </div>
                     </div>
 
                     {/* Dynamic sections */}
@@ -34,13 +28,9 @@ const Footer = () => {
                             <ul className="space-y-2.5">
                                 {section.links.map((link, i)=>(
                                     <li key={i}>
-                                        {link.to ? (
-                                            <Link to={link.to} className="text-sm text-white/70 hover:text-white">
+                                        <Link to={link.to} className="text-sm text-white/70 hover:text-white">
                                             {link.label}
-                                            </Link>
-                                        ):(
-                                            <a href={link.href} className="text-sm text-white/70 hover:text-white">{link.label}</a>
-                                        )}
+                                        </Link>
 
                                     </li>
 
@@ -53,13 +43,15 @@ const Footer = () => {
 
                     {/* Contact */}
                     <div>
-                        <h3 className="text-sm font-semibold uppercase mb-4">Contact Us</h3>
+                        <h3 className="text-sm font-semibold uppercase mb-4">Project</h3>
                         <ul className="space-y-3">
                             {footerData.contact.map((item, i)=>{
                                 const Icon=item.icon
                                 return (
-                                    <li key={i} className="flex gap-3 text-sm text-white/70">
-                                        <Icon className="size-4 text-white"/>{item.text}
+                                    <li key={i}>
+                                        <a href={item.href} target="_blank" rel="noreferrer" className="flex gap-3 text-sm text-white/70 hover:text-white">
+                                            <Icon className="size-4 text-white"/>{item.text}
+                                        </a>
                                     </li>
                                 )
                             })}
@@ -72,15 +64,8 @@ const Footer = () => {
                 </div>
 
                 {/* bottom */}
-                <div className="border-t border-white/10 mt-10 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div className="border-t border-white/10 mt-10 pt-6 flex justify-center sm:justify-start">
                     <p className="text-xs text-white/50">{footerData.bottom.copyright}</p>
-
-                    <div>
-                        {footerData.bottom.links.map((link, i)=>(
-                            <a key={i} href={link.href} className="text-xs text-white/50 hover:text-white/70">{link.label}</a>
-                        ))}
-                    </div>
-
                 </div>
                 <div>
 

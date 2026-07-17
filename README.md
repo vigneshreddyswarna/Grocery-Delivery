@@ -213,9 +213,10 @@ Deploy the backend and frontend as separate Vercel projects.
 
 ### Frontend
 
-- Root directory: repository root
+- Root directory: `client`
+- Install command: `npm ci`
 - Build command: `npm run build`
-- Output directory: `client/dist`
+- Output directory: `dist`
 - Required environment variables:
 
 ```env

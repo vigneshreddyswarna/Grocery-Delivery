@@ -8,7 +8,7 @@ import { useAuth } from "../context/AuthContext"
 import api from "../config/api"
 import toast from "react-hot-toast"
 import { ADDRESS_API } from "../config/routes"
-import { geocodeIndianAddress, isIndianPincode, isPointInIndia } from "../utils/indiaGeocoding"
+import { isIndianPincode, isPointInIndia } from "../utils/indiaGeocoding"
 
 const Addresses = () => {
   const { updateUser } = useAuth()
@@ -57,21 +57,15 @@ const Addresses = () => {
       }))
       .filter((item) => item.id)
 
-  const geocodeAddress = async (): Promise<{ lat: number; lng: number }> => {
-    return geocodeIndianAddress(form)
-  }
-
   // Fixed: Corrected React event type signature to handle HTML form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     try {
       if (!isIndianPincode(form.zip)) throw new Error("Enter a valid 6-digit Indian PIN code")
-      if (form.mapLocationSource === "address") throw new Error("Find the address and confirm its delivery pin on the map")
+      if (form.mapLocationSource !== "current") throw new Error("Detect your current location before saving the address")
       const hasValidProvidedCoords = Number.isFinite(Number(form.lat)) && Number.isFinite(Number(form.lng))
-      const shouldUseAddressMapPoint = form.mapLocationSource === "address" || !hasValidProvidedCoords
-      const coords = shouldUseAddressMapPoint
-        ? await geocodeAddress()
-        : { lat: Number(form.lat), lng: Number(form.lng) }
+      if (!hasValidProvidedCoords) throw new Error("Unable to read the detected location. Please try again")
+      const coords = { lat: Number(form.lat), lng: Number(form.lng) }
       if (!isPointInIndia(coords.lat, coords.lng)) throw new Error("The selected map point must be within India")
       const payload = {
         label: form.label,

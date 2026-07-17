@@ -67,7 +67,7 @@ export interface DeliveryPartner {
     email: string;
     phone: string;
     avatar: string;
-    vehicleType: "bike" | "scooter" | "car";
+    vehicleType: "bike";
     isActive: boolean;
     emailVerifiedAt?: string | null;
     createdAt: string;

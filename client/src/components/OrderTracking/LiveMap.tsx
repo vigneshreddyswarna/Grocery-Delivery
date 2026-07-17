@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import type { Order } from "../../types";
 import { getVehiclePresentation } from "./vehiclePresentation";
+import { geocodeIndianAddress } from "../../utils/indiaGeocoding";
 
 type MapPoint = { lat?: number | string | null; lng?: number | string | null };
 type AddressLike = Order["shippingAddress"];
@@ -48,27 +49,29 @@ export default function LiveMap({ order, liveLocation }: { order: Order, liveLoc
         ? { lat: Number(currentLocation.lat), lng: Number(currentLocation.lng) }
         : null;
     const addressQuery = useMemo(() => buildDeliveryAddressQuery(order.shippingAddress), [order.shippingAddress]);
-    const storedDestination = isValidMapPoint(order.shippingAddress)
+    const storedDestination = useMemo(() => isValidMapPoint(order.shippingAddress)
         ? { lat: Number(order.shippingAddress.lat), lng: Number(order.shippingAddress.lng) }
-        : null;
+        : null, [order.shippingAddress]);
     const [resolvedDestination, setResolvedDestination] = useState<{ lat: number; lng: number } | null>(null);
     const [isResolvingDestination, setIsResolvingDestination] = useState(false);
-    const [resolveFailed, setResolveFailed] = useState(false);
-    const destinationLocation = resolvedDestination || (resolveFailed ? storedDestination : null);
+    // Saved coordinates come from the customer's confirmed GPS/map point and are
+    // more precise than geocoding the address text again during tracking.
+    const destinationLocation = storedDestination || resolvedDestination;
     const hasDeliveryAddress = Boolean(destinationLocation);
-    const vehicle = getVehiclePresentation(order.deliveryPartner?.vehicleType);
+    const vehicle = getVehiclePresentation();
 
     const vehicleIcon = L.divIcon({
         className: "",
         html: `
-            <div style="width:54px;height:54px;border-radius:18px;background:linear-gradient(135deg,#15803d,#f97316);border:3px solid #fff;box-shadow:0 8px 22px rgba(15,23,42,.35);display:flex;align-items:center;justify-content:center;">
-                <svg viewBox="0 0 24 24" width="38" height="38" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <div aria-label="Delivery partner on bike" style="position:relative;width:58px;height:58px;border-radius:50% 50% 50% 12px;transform:rotate(-45deg);background:linear-gradient(145deg,#0f5132,#1f7a4c);border:3px solid #fff;box-shadow:0 8px 24px rgba(15,23,42,.38);display:flex;align-items:center;justify-content:center;">
+                <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(45deg)">
                     ${vehicle.path}
                 </svg>
+                <span style="position:absolute;right:-3px;top:-3px;width:13px;height:13px;border-radius:999px;background:#22c55e;border:2px solid #fff;transform:rotate(45deg)"></span>
             </div>`,
-        iconSize: [54, 54],
-        iconAnchor: [27, 27],
-        popupAnchor: [0, -27],
+        iconSize: [58, 58],
+        iconAnchor: [14, 52],
+        popupAnchor: [14, -48],
     });
 
     // Destination pin icon
@@ -81,9 +84,8 @@ export default function LiveMap({ order, liveLocation }: { order: Order, liveLoc
     });
 
     useEffect(() => {
-        if (!addressQuery) {
+        if (storedDestination || !addressQuery) {
             queueMicrotask(() => {
-                setResolveFailed(true);
                 setIsResolvingDestination(false);
                 setResolvedDestination(null);
             });
@@ -94,32 +96,21 @@ export default function LiveMap({ order, liveLocation }: { order: Order, liveLoc
         queueMicrotask(() => {
             if (!controller.signal.aborted) {
                 setIsResolvingDestination(true);
-                setResolveFailed(false);
                 setResolvedDestination(null);
             }
         });
 
-        fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(addressQuery)}`, {
-            signal: controller.signal,
-        })
-            .then((response) => {
-                if (!response.ok) throw new Error("Unable to resolve delivery address");
-                return response.json();
-            })
-            .then((results) => {
-                const match = Array.isArray(results) ? results[0] : null;
-                if (!match?.lat || !match?.lon) throw new Error("Delivery address not found");
-                setResolvedDestination({ lat: Number(match.lat), lng: Number(match.lon) });
-            })
+        geocodeIndianAddress(order.shippingAddress)
+            .then(setResolvedDestination)
             .catch((error) => {
-                if (error.name !== "AbortError") setResolveFailed(true);
+                if (error.name !== "AbortError") setResolvedDestination(null);
             })
             .finally(() => {
                 if (!controller.signal.aborted) setIsResolvingDestination(false);
             });
 
         return () => controller.abort();
-    }, [addressQuery]);
+    }, [addressQuery, order.shippingAddress, storedDestination]);
 
     const mapPoints: Array<[number, number]> = [
         ...(currentMapPoint ? [[currentMapPoint.lat, currentMapPoint.lng] as [number, number]] : []),

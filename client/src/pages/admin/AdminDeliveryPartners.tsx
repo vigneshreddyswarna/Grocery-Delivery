@@ -13,10 +13,9 @@ type PartnerForm = {
     email: string;
     password: string;
     phone: string;
-    vehicleType: "bike" | "scooter" | "car";
 };
 
-const emptyForm: PartnerForm = { name: "", email: "", password: "", phone: "", vehicleType: "bike" };
+const emptyForm: PartnerForm = { name: "", email: "", password: "", phone: "" };
 type PendingPartner = { id: string; email: string };
 
 export default function AdminDeliveryPartners() {
@@ -61,7 +60,6 @@ export default function AdminDeliveryPartners() {
             email: partner.email,
             password: "",
             phone: partner.phone,
-            vehicleType: partner.vehicleType,
         });
         setShowForm(true);
     };
@@ -158,7 +156,7 @@ export default function AdminDeliveryPartners() {
                                         </div>
                                         <div className="min-w-0">
                                             <p className="font-semibold text-zinc-900 text-sm truncate">{p.name}</p>
-                                            <p className="text-xs text-zinc-500 capitalize">{p.vehicleType}</p>
+                                            <p className="text-xs text-zinc-500">Delivery partner</p>
                                         </div>
                                     </div>
                                     <div className="flex gap-1 shrink-0">
@@ -209,7 +207,7 @@ export default function AdminDeliveryPartners() {
                                     <label className="block text-sm font-medium text-app-green mb-1.5">Full Name</label>
                                     <input type="text" name="deliveryPartnerName" autoComplete="off" required disabled={Boolean(pendingPartner)} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl border border-app-border focus:border-app-green outline-none disabled:bg-zinc-50 disabled:text-zinc-500" />
                                 </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
                                     <div>
                                         <label className="block text-sm font-medium text-app-green mb-1.5">Email</label>
                                         <AutofillSafeInput type="email" name="freshcartNewDeliveryEmail" required disabled={Boolean(pendingPartner)} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl border border-app-border focus:border-app-green outline-none disabled:bg-zinc-50 disabled:text-zinc-500" />
@@ -223,14 +221,6 @@ export default function AdminDeliveryPartners() {
                                     <div>
                                         <label className="block text-sm font-medium text-app-green mb-1.5">Phone</label>
                                         <input type="text" name="deliveryPartnerPhone" autoComplete="off" required disabled={Boolean(pendingPartner)} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full px-4 py-2.5 text-sm rounded-xl border border-app-border focus:border-app-green outline-none disabled:bg-zinc-50 disabled:text-zinc-500" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-app-green mb-1.5">Vehicle Type</label>
-                                        <select value={form.vehicleType} disabled={Boolean(pendingPartner)} onChange={(e) => setForm({ ...form, vehicleType: e.target.value as PartnerForm["vehicleType"] })} className="w-full px-4 py-2.5 text-sm rounded-xl border border-app-border focus:border-app-green outline-none bg-white disabled:bg-zinc-50 disabled:text-zinc-500">
-                                            <option value="bike">Bike</option>
-                                            <option value="scooter">Scooter</option>
-                                            <option value="car">Car</option>
-                                        </select>
                                     </div>
                                 </div>
                                 {pendingPartner && (

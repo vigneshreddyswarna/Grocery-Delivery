@@ -54,7 +54,7 @@ export const createDeliveryPartner=async(req:Request,res:Response)=>{
     const email=cleanString(req.body.email,254).toLowerCase()
     const password=typeof req.body.password === "string" ? req.body.password : ""
     const phone=cleanString(req.body.phone,30)
-    const vehicleType=cleanString(req.body.vehicleType,30) || "bike"
+    const vehicleType="bike"
 
     if(!name || !isValidEmail(email) || password.length < 8 || !phone){
         res.status(400).json({message:"Provide a valid name, email, phone and password of at least 8 characters"})
@@ -133,7 +133,7 @@ export const confirmDeliveryPartner=async(req:Request,res:Response)=>{
 // update delivery partner profile
 
 export const updateDeliveryPartner=async(req:Request,res:Response)=>{
-    const {name,email,password,phone,vehicleType,isActive}=req.body
+    const {name,email,password,phone,isActive}=req.body
     const existing=await prisma.deliveryPartner.findUnique({where:{id:req.params.id as string}})
     if(!existing) return res.status(404).json({message:"Partner not found"})
 
@@ -141,7 +141,6 @@ export const updateDeliveryPartner=async(req:Request,res:Response)=>{
     const nextName=cleanString(name,100)
     const nextEmail=cleanString(email,254).toLowerCase()
     const nextPhone=cleanString(phone,30)
-    const nextVehicleType=cleanString(vehicleType,30)
     if(nextName) data.name=nextName
     if(nextEmail){
         if(!isValidEmail(nextEmail)) return res.status(400).json({message:"Provide a valid email"})
@@ -151,7 +150,7 @@ export const updateDeliveryPartner=async(req:Request,res:Response)=>{
         }
     }
     if(nextPhone) data.phone=nextPhone
-    if(nextVehicleType) data.vehicleType=nextVehicleType
+    if(existing.vehicleType !== "bike") data.vehicleType="bike"
     if(typeof isActive === "boolean") data.isActive=isActive
     if(typeof password === "string" && password.trim()){
         if(password.length < 8 || !/[a-z]/i.test(password) || !/\d/.test(password)){

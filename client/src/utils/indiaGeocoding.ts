@@ -20,6 +20,39 @@ const requestJson = async (url: string) => {
     return response.json()
 }
 
+type GeocodeResult = {
+    lat?: string
+    lon?: string
+    display_name?: string
+    address?: Record<string, string | undefined>
+}
+
+const normalized = (value: unknown) => String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim()
+
+const hasExactPincode = (item: GeocodeResult, zip: string) =>
+    String(item?.address?.postcode || "").replace(/\s/g, "") === zip
+
+const localityScore = (item: GeocodeResult, fields: Pick<IndiaAddressFields, "address" | "city" | "state">) => {
+    const searchable = normalized([
+        item?.display_name,
+        item?.address?.village,
+        item?.address?.town,
+        item?.address?.city,
+        item?.address?.municipality,
+        item?.address?.county,
+        item?.address?.state,
+    ].filter(Boolean).join(" "))
+    const terms = [fields.address, fields.city, fields.state]
+        .flatMap((value) => normalized(value).split(" "))
+        .filter((term) => term.length > 2)
+    return terms.reduce((score, term) => score + (searchable.includes(term) ? 1 : 0), 0)
+}
+
+const bestExactPincodeMatch = (items: GeocodeResult[], zip: string, fields: Pick<IndiaAddressFields, "address" | "city" | "state">) =>
+    items
+        .filter((item) => hasExactPincode(item, zip))
+        .sort((a, b) => localityScore(b, fields) - localityScore(a, fields))[0]
+
 export const geocodeIndianAddress = async (fields: Pick<IndiaAddressFields, "address" | "city" | "state" | "zip">) => {
     if (!isIndianPincode(fields.zip)) throw new Error("Enter a valid 6-digit Indian PIN code")
 
@@ -37,9 +70,24 @@ export const geocodeIndianAddress = async (fields: Pick<IndiaAddressFields, "add
         country: "India",
     })
     const results = await requestJson(`https://nominatim.openstreetmap.org/search?${params}`)
-    const matches = Array.isArray(results) ? results : []
-    const exactPin = matches.find((item) => String(item?.address?.postcode || "").replace(/\s/g, "") === fields.zip.trim())
-    const match = exactPin || matches[0]
+    const matches: GeocodeResult[] = Array.isArray(results) ? results : []
+    let match = bestExactPincodeMatch(matches, fields.zip.trim(), fields)
+
+    // Never accept a similarly named village with a different PIN. If detailed
+    // address data is missing in OpenStreetMap, fall back to the verified PIN
+    // delivery area instead of placing the marker in the wrong district.
+    if (!match) {
+        const pinParams = new URLSearchParams({
+            format: "jsonv2",
+            addressdetails: "1",
+            limit: "10",
+            countrycodes: "in",
+            postalcode: fields.zip.trim(),
+            country: "India",
+        })
+        const pinResults = await requestJson(`https://nominatim.openstreetmap.org/search?${pinParams}`)
+        match = bestExactPincodeMatch(Array.isArray(pinResults) ? pinResults as GeocodeResult[] : [], fields.zip.trim(), fields)
+    }
     const lat = Number(match?.lat)
     const lng = Number(match?.lon)
     if (!match || !isPointInIndia(lat, lng)) throw new Error("We could not locate that Indian address. Check the street, city, state and PIN code")

@@ -58,7 +58,7 @@ export default function LiveMap({ order, liveLocation }: { order: Order, liveLoc
     // more precise than geocoding the address text again during tracking.
     const destinationLocation = storedDestination || resolvedDestination;
     const hasDeliveryAddress = Boolean(destinationLocation);
-    const vehicle = getVehiclePresentation();
+    const vehicle = getVehiclePresentation(order.deliveryPartner?.vehicleType);
 
     const vehicleIcon = L.divIcon({
         className: "",

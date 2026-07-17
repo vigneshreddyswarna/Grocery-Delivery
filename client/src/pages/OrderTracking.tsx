@@ -88,7 +88,7 @@ const OrderTracking = () => {
     )
   }
 
-  const partnerVehicle = getVehiclePresentation()
+  const partnerVehicle = getVehiclePresentation(order.deliveryPartner?.vehicleType)
 
   return (
     <div className="min-h-screen mb-20 bg-app-cream">

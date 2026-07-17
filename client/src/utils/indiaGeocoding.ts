@@ -1,6 +1,8 @@
 export type IndiaAddressFields = {
     address: string
+    addressLine2?: string
     city: string
+    district?: string
     state: string
     zip: string
     lat: number
@@ -53,21 +55,25 @@ const bestExactPincodeMatch = (items: GeocodeResult[], zip: string, fields: Pick
         .filter((item) => hasExactPincode(item, zip))
         .sort((a, b) => localityScore(b, fields) - localityScore(a, fields))[0]
 
-export const geocodeIndianAddress = async (fields: Pick<IndiaAddressFields, "address" | "city" | "state" | "zip">) => {
+const distanceKm = (a:{lat:number;lng:number},b:{lat:number;lng:number}) => {
+    const radians=(value:number)=>value*Math.PI/180
+    const dLat=radians(b.lat-a.lat),dLng=radians(b.lng-a.lng)
+    const value=Math.sin(dLat/2)**2+Math.cos(radians(a.lat))*Math.cos(radians(b.lat))*Math.sin(dLng/2)**2
+    return 6371*2*Math.atan2(Math.sqrt(value),Math.sqrt(1-value))
+}
+
+export const geocodeIndianAddress = async (fields: Pick<IndiaAddressFields, "address" | "addressLine2" | "city" | "district" | "state" | "zip">) => {
     if (!isIndianPincode(fields.zip)) throw new Error("Enter a valid 6-digit Indian PIN code")
 
+    const fullQuery=[fields.address,fields.addressLine2,fields.city,fields.district,fields.state,fields.zip,"India"].filter(Boolean).join(", ")
     const params = new URLSearchParams({
         format: "jsonv2",
         addressdetails: "1",
-        limit: "5",
+        limit: "10",
         countrycodes: "in",
         bounded: "1",
         viewbox: INDIA_VIEWBOX,
-        street: fields.address.trim(),
-        city: fields.city.trim(),
-        state: fields.state.trim(),
-        postalcode: fields.zip.trim(),
-        country: "India",
+        q: fullQuery,
     })
     const results = await requestJson(`https://nominatim.openstreetmap.org/search?${params}`)
     const matches: GeocodeResult[] = Array.isArray(results) ? results : []
@@ -86,7 +92,18 @@ export const geocodeIndianAddress = async (fields: Pick<IndiaAddressFields, "add
             country: "India",
         })
         const pinResults = await requestJson(`https://nominatim.openstreetmap.org/search?${pinParams}`)
-        match = bestExactPincodeMatch(Array.isArray(pinResults) ? pinResults as GeocodeResult[] : [], fields.zip.trim(), fields)
+        const pinMatches=Array.isArray(pinResults) ? pinResults as GeocodeResult[] : []
+        const pinAnchor=bestExactPincodeMatch(pinMatches,fields.zip.trim(),fields)
+        const anchorPoint=pinAnchor?{lat:Number(pinAnchor.lat),lng:Number(pinAnchor.lon)}:null
+        // Rural OSM records sometimes omit the postcode. Accept such a village
+        // only when its name matches the supplied locality and it lies inside
+        // the nearby PIN delivery area; otherwise use the PIN-area centroid.
+        const nearbyVillage=anchorPoint?matches
+            .filter(item=>localityScore(item,fields)>0)
+            .map(item=>({item,point:{lat:Number(item.lat),lng:Number(item.lon)}}))
+            .filter(candidate=>isPointInIndia(candidate.point.lat,candidate.point.lng)&&distanceKm(anchorPoint,candidate.point)<=30)
+            .sort((a,b)=>localityScore(b.item,fields)-localityScore(a.item,fields))[0]?.item:null
+        match=nearbyVillage||pinAnchor
     }
     const lat = Number(match?.lat)
     const lng = Number(match?.lon)
@@ -112,11 +129,12 @@ export const reverseGeocodeIndianPoint = async (lat: number, lng: number): Promi
         .filter(Boolean).join(" ")
     const locality = details.neighbourhood || details.suburb || details.quarter || details.hamlet
     const address = [street, locality].filter(Boolean).join(", ") || result?.display_name?.split(",").slice(0, 2).join(", ") || ""
-    const city = details.city || details.town || details.village || details.municipality || details.county || ""
+    const city = details.village || details.town || details.city || details.municipality || ""
+    const district = details.state_district || details.county || ""
     const state = details.state || details.state_district || ""
     const zip = String(details.postcode || "").replace(/\s/g, "")
     if (!address || !city || !state || !isIndianPincode(zip)) {
         throw new Error("Location detected, but the complete address could not be resolved. Please fill the missing fields")
     }
-    return { address, city, state, zip, lat, lng }
+    return { address, addressLine2:locality || "", city, district, state, zip, lat, lng }
 }

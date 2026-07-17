@@ -20,7 +20,9 @@ const Addresses = () => {
   const [form, setForm] = useState({
     label: "",
     address: "",
+    addressLine2: "",
     city: "",
+    district: "",
     state: "",
     zip: "",
     isDefault: false,
@@ -33,7 +35,9 @@ const Addresses = () => {
     setForm({
       label: "",
       address: "",
+      addressLine2: "",
       city: "",
+      district: "",
       state: "",
       zip: "",
       isDefault: false,
@@ -71,7 +75,7 @@ const Addresses = () => {
       if (!isPointInIndia(coords.lat, coords.lng)) throw new Error("The selected map point must be within India")
       const payload = {
         label: form.label,
-        address: form.address,
+        address: [form.address,form.addressLine2,form.district].filter(Boolean).join(", "),
         city: form.city,
         state: form.state,
         zip: form.zip,
@@ -103,7 +107,9 @@ const Addresses = () => {
     setForm({
       label: add.label,
       address: add.address,
+      addressLine2: "",
       city: add.city,
+      district: "",
       state: add.state,
       zip: add.zip,
       isDefault: add.isDefault,

@@ -7,7 +7,9 @@ import AddressMapPicker from "./AddressMapPicker"
 export interface AddressFormState {
     label:string
     address:string
+    addressLine2:string
     city:string
+    district:string
     state:string
     zip:string
     isDefault:boolean
@@ -75,13 +77,16 @@ export default function AddressForm({resetForm,handleSubmit,form,setForm,editing
                 <div className="flex items-center justify-between mb-5"><h2 className="text-lg font-semibold text-app-green">{editingId ? "Edit Address" : "Add New Address"}</h2><button type="button" onClick={resetForm} className="hover:bg-app-cream p-2 rounded-lg" aria-label="Close address form"><XIcon className="size-5" /></button></div>
                 <div className="space-y-4">
                     <label className="block text-sm font-medium text-app-green">Label<input type="text" required value={form.label} onChange={event=>update({label:event.target.value})} placeholder="Home, Work, etc." className="mt-1.5 w-full px-4 py-2.5 text-sm rounded-xl border border-app-border focus:border-app-green outline-none" /></label>
-                    <label className="block text-sm font-medium text-app-green">Street Address<input type="text" required value={form.address} onChange={event=>update({address:event.target.value,mapLocationSource:"address"})} className="mt-1.5 w-full px-4 py-2.5 text-sm rounded-xl border border-app-border focus:border-app-green outline-none" /></label>
+                    <label className="block text-sm font-medium text-app-green">Address Line 1<input type="text" required value={form.address} onChange={event=>update({address:event.target.value,mapLocationSource:"address"})} placeholder="House/building number and road" className="mt-1.5 w-full px-4 py-2.5 text-sm rounded-xl border border-app-border focus:border-app-green outline-none" /></label>
+                    <label className="block text-sm font-medium text-app-green">Address Line 2 <span className="font-normal text-app-text-light">(optional)</span><input type="text" value={form.addressLine2} onChange={event=>update({addressLine2:event.target.value,mapLocationSource:"address"})} placeholder="Local area or nearby landmark" className="mt-1.5 w-full px-4 py-2.5 text-sm rounded-xl border border-app-border focus:border-app-green outline-none" /></label>
                     <div className="grid grid-cols-2 gap-3">
-                        <label className="block text-sm font-medium text-app-green">City<input type="text" required value={form.city} onChange={event=>update({city:event.target.value,mapLocationSource:"address"})} className="mt-1.5 w-full px-4 py-2.5 text-sm rounded-xl border border-app-border" /></label>
-                        <label className="block text-sm font-medium text-app-green">State<input type="text" required value={form.state} onChange={event=>update({state:event.target.value,mapLocationSource:"address"})} className="mt-1.5 w-full px-4 py-2.5 text-sm rounded-xl border border-app-border" /></label>
+                        <label className="block text-sm font-medium text-app-green">Village / Town / City<input type="text" required value={form.city} onChange={event=>update({city:event.target.value,mapLocationSource:"address"})} className="mt-1.5 w-full px-4 py-2.5 text-sm rounded-xl border border-app-border" /></label>
+                        <label className="block text-sm font-medium text-app-green">District<input type="text" required value={form.district} onChange={event=>update({district:event.target.value,mapLocationSource:"address"})} className="mt-1.5 w-full px-4 py-2.5 text-sm rounded-xl border border-app-border" /></label>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
+                        <label className="block text-sm font-medium text-app-green">State<input type="text" required value={form.state} onChange={event=>update({state:event.target.value,mapLocationSource:"address"})} className="mt-1.5 w-full px-4 py-2.5 text-sm rounded-xl border border-app-border" /></label>
                         <label className="block text-sm font-medium text-app-green">PIN Code<input type="text" required inputMode="numeric" pattern="[1-9][0-9]{5}" maxLength={6} value={form.zip} onChange={event=>update({zip:event.target.value.replace(/\D/g,"").slice(0,6),mapLocationSource:"address"})} className="mt-1.5 w-full px-4 py-2.5 text-sm rounded-xl border border-app-border" /></label>
+                    </div><div>
                         <label className="flex items-center gap-2 pt-7"><input type="checkbox" checked={form.isDefault} onChange={event=>update({isDefault:event.target.checked})}/><span className="text-sm">Set as default</span></label>
                     </div>
                     <div className="space-y-2"><div className="flex items-center justify-between gap-2"><span className="text-sm font-medium text-app-green">Confirm delivery pin</span><div className="flex gap-3"><button type="button" disabled={finding} onClick={findAddress} className="text-xs font-semibold text-app-green disabled:opacity-60 flex items-center gap-1">{finding?<LoaderCircleIcon className="size-3.5 animate-spin"/>:<MapPinnedIcon className="size-3.5"/>}{finding?"Finding...":"Find address"}</button><button type="button" disabled={locating} onClick={useCurrentLocation} className="text-xs font-semibold text-app-orange disabled:opacity-60 flex items-center gap-1">{locating?<LoaderCircleIcon className="size-3.5 animate-spin"/>:<LocateFixedIcon className="size-3.5"/>}{locating?"Detecting...":"Current location"}</button></div></div>{mapPoint&&<AddressMapPicker point={mapPoint} onPick={pickMapPoint}/>}<p className="text-xs text-app-text-light">Check the pin carefully. Tap the map to move it to the exact entrance or delivery point.</p></div>

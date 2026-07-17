@@ -63,24 +63,24 @@ export default function LiveMap({ order, liveLocation }: { order: Order, liveLoc
     const vehicleIcon = L.divIcon({
         className: "",
         html: `
-            <div aria-label="Delivery partner on bike" style="position:relative;width:58px;height:58px;border-radius:50% 50% 50% 12px;transform:rotate(-45deg);background:linear-gradient(145deg,#0f5132,#1f7a4c);border:3px solid #fff;box-shadow:0 8px 24px rgba(15,23,42,.38);display:flex;align-items:center;justify-content:center;">
-                <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(45deg)">
+            <div aria-label="Delivery partner on bike" style="position:relative;width:48px;height:48px;border-radius:50% 50% 50% 12px;transform:rotate(-45deg);background:linear-gradient(145deg,#0f5132,#1f7a4c);border:3px solid #fff;box-shadow:0 8px 24px rgba(15,23,42,.38);display:flex;align-items:center;justify-content:center;">
+                <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(45deg)">
                     ${vehicle.path}
                 </svg>
                 <span style="position:absolute;right:-3px;top:-3px;width:13px;height:13px;border-radius:999px;background:#22c55e;border:2px solid #fff;transform:rotate(45deg)"></span>
             </div>`,
-        iconSize: [58, 58],
-        iconAnchor: [14, 52],
-        popupAnchor: [14, -48],
+        iconSize: [48, 48],
+        iconAnchor: [12, 43],
+        popupAnchor: [12, -40],
     });
 
     // Destination pin icon
     const destinationIcon = L.divIcon({
         className: "",
-        html: `<div style="width:30px;height:30px;border-radius:50% 50% 50% 0;background:#1b3022;transform:rotate(-45deg);border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.25);"><div style="width:9px;height:9px;border-radius:9999px;background:white;margin:7px auto;"></div></div>`,
-        iconSize: [30, 30],
-        iconAnchor: [15, 30],
-        popupAnchor: [0, -30],
+        html: `<div style="width:48px;height:48px;border-radius:50% 50% 50% 0;background:#1b3022;transform:rotate(-45deg);border:3px solid white;box-shadow:0 6px 18px rgba(0,0,0,.3);"><div style="width:14px;height:14px;border-radius:9999px;background:white;margin:14px auto;"></div></div>`,
+        iconSize: [48, 48],
+        iconAnchor: [24, 48],
+        popupAnchor: [0, -48],
     });
 
     useEffect(() => {

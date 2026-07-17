@@ -1,8 +1,7 @@
-import { LocateFixedIcon, LoaderCircleIcon, MapPinnedIcon, XIcon } from "lucide-react"
+import { LocateFixedIcon, LoaderCircleIcon, XIcon } from "lucide-react"
 import { useState } from "react"
 import toast from "react-hot-toast"
-import { geocodeIndianAddress, reverseGeocodeIndianPoint } from "../utils/indiaGeocoding"
-import AddressMapPicker from "./AddressMapPicker"
+import { reverseGeocodeIndianPoint } from "../utils/indiaGeocoding"
 
 export interface AddressFormState {
     label:string
@@ -28,7 +27,6 @@ interface AddressFormProps {
 
 export default function AddressForm({resetForm,handleSubmit,form,setForm,editingId}:AddressFormProps){
     const [locating,setLocating]=useState(false)
-    const [finding,setFinding]=useState(false)
     const update=(values:Partial<AddressFormState>)=>setForm(current=>({...current,...values}))
     const useCurrentLocation=()=>{
         if(!navigator.geolocation){toast.error("Location is not supported by this browser");return}
@@ -49,26 +47,7 @@ export default function AddressForm({resetForm,handleSubmit,form,setForm,editing
         )
     }
 
-    const findAddress=async()=>{
-        setFinding(true)
-        try{
-            const point=await geocodeIndianAddress(form)
-            update({lat:String(point.lat),lng:String(point.lng),mapLocationSource:"confirmed"})
-            toast.success("Address found. Confirm the pin or tap the correct spot on the map")
-        }catch(error){toast.error(error instanceof Error?error.message:"Unable to locate this address")}
-        finally{setFinding(false)}
-    }
-
-    const pickMapPoint=async(point:{lat:number;lng:number})=>{
-        update({lat:String(point.lat),lng:String(point.lng),mapLocationSource:"confirmed"})
-        try{
-            const resolved=await reverseGeocodeIndianPoint(point.lat,point.lng)
-            update({...resolved,lat:String(point.lat),lng:String(point.lng),mapLocationSource:"confirmed"})
-        }catch{toast("Pin updated. Review the written address before saving")}
-    }
-
-    const mapPoint=Number.isFinite(Number(form.lat))&&Number.isFinite(Number(form.lng))&&Number(form.lat)!==0&&Number(form.lng)!==0
-        ? {lat:Number(form.lat),lng:Number(form.lng)} : null
+    const hasDetectedLocation=Number.isFinite(Number(form.lat))&&Number.isFinite(Number(form.lng))&&Number(form.lat)!==0&&Number(form.lng)!==0&&form.mapLocationSource==="current"
 
     return <>
         <div className="fixed inset-0 bg-black/40 z-50" />
@@ -89,9 +68,9 @@ export default function AddressForm({resetForm,handleSubmit,form,setForm,editing
                     </div><div>
                         <label className="flex items-center gap-2 pt-7"><input type="checkbox" checked={form.isDefault} onChange={event=>update({isDefault:event.target.checked})}/><span className="text-sm">Set as default</span></label>
                     </div>
-                    <div className="space-y-2"><div className="flex items-center justify-between gap-2"><span className="text-sm font-medium text-app-green">Confirm delivery pin</span><div className="flex gap-3"><button type="button" disabled={finding} onClick={findAddress} className="text-xs font-semibold text-app-green disabled:opacity-60 flex items-center gap-1">{finding?<LoaderCircleIcon className="size-3.5 animate-spin"/>:<MapPinnedIcon className="size-3.5"/>}{finding?"Finding...":"Find address"}</button><button type="button" disabled={locating} onClick={useCurrentLocation} className="text-xs font-semibold text-app-orange disabled:opacity-60 flex items-center gap-1">{locating?<LoaderCircleIcon className="size-3.5 animate-spin"/>:<LocateFixedIcon className="size-3.5"/>}{locating?"Detecting...":"Current location"}</button></div></div>{mapPoint&&<AddressMapPicker point={mapPoint} onPick={pickMapPoint}/>}<p className="text-xs text-app-text-light">Check the pin carefully. Tap the map to move it to the exact entrance or delivery point.</p></div>
+                    <div className="rounded-xl border border-app-border bg-app-cream/60 p-4"><div className="flex items-center justify-between gap-3"><div><p className="text-sm font-medium text-app-green">Current location</p><p className="mt-1 text-xs text-app-text-light">Uses high-accuracy GPS and automatically fills the address fields.</p></div><button type="button" disabled={locating} onClick={useCurrentLocation} className="shrink-0 rounded-lg bg-app-orange px-3 py-2 text-xs font-semibold text-white disabled:opacity-60 flex items-center gap-1">{locating?<LoaderCircleIcon className="size-3.5 animate-spin"/>:<LocateFixedIcon className="size-3.5"/>}{locating?"Detecting...":"Detect location"}</button></div>{hasDetectedLocation&&<p className="mt-2 text-xs font-semibold text-green-700">Location detected and address autofilled.</p>}</div>
                 </div>
-                <button type="submit" disabled={!mapPoint||form.mapLocationSource==="address"} className="mt-6 w-full py-3 bg-app-green text-white font-semibold rounded-xl disabled:opacity-50">{editingId ? "Update Address" : "Save Confirmed Address"}</button>
+                <button type="submit" disabled={!hasDetectedLocation} className="mt-6 w-full py-3 bg-app-green text-white font-semibold rounded-xl disabled:opacity-50">{editingId ? "Update Address" : "Save Address"}</button>
             </form>
         </div>
     </>

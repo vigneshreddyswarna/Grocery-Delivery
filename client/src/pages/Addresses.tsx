@@ -62,6 +62,7 @@ const Addresses = () => {
     e.preventDefault()
     try {
       if (!isIndianPincode(form.zip)) throw new Error("Enter a valid 6-digit Indian PIN code")
+      if (form.mapLocationSource === "address") throw new Error("Find the address and confirm its delivery pin on the map")
       const hasValidProvidedCoords = Number.isFinite(Number(form.lat)) && Number.isFinite(Number(form.lng))
       const shouldUseAddressMapPoint = form.mapLocationSource === "address" || !hasValidProvidedCoords
       const coords = shouldUseAddressMapPoint

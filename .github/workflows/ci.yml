@@ -37,3 +37,8 @@ jobs:
           npm audit --prefix server --omit=dev --audit-level=high
       - name: Verify application
         run: npm run verify
+      - name: Install browser for end-to-end tests
+        working-directory: client
+        run: npx playwright install --with-deps chromium
+      - name: Run browser and accessibility tests
+        run: npm --prefix client run test:e2e

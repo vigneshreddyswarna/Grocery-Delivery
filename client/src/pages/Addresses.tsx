@@ -28,7 +28,8 @@ const Addresses = () => {
     isDefault: false,
     lat: "",
     lng: "",
-    mapLocationSource: "address"
+    mapLocationSource: "address",
+    mapLocationAccuracy: ""
   })
 
   const resetForm = () => {
@@ -43,7 +44,8 @@ const Addresses = () => {
       isDefault: false,
       lat: "",
       lng: "",
-      mapLocationSource: "address"
+      mapLocationSource: "address",
+      mapLocationAccuracy: ""
     })
     setShowForm(false)
     setEditingId(null)
@@ -109,7 +111,8 @@ const Addresses = () => {
       isDefault: add.isDefault,
       lat: String(add.lat ?? ""),
       lng: String(add.lng ?? ""),
-      mapLocationSource: "manual"
+      mapLocationSource: "manual",
+      mapLocationAccuracy: ""
     })
     // Fixed: Accounted for fallback Mongo identity schema structures safely
     setEditingId(add.id)

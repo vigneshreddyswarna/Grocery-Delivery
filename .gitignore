@@ -11,6 +11,8 @@ server/generated/
 
 dist
 **/dist
+**/test-results
+**/playwright-report
 
 *.log
 npm-debug.log*

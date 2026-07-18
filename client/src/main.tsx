@@ -6,6 +6,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { CartProvider } from './context/CartContext.tsx'
 import { AuthProvider } from './context/AuthContext.tsx'
 import AppErrorBoundary from './components/AppErrorBoundary.tsx'
+import { Analytics } from '@vercel/analytics/react'
 
 createRoot(document.getElementById('root')!).render(
   <AppErrorBoundary>
@@ -13,6 +14,7 @@ createRoot(document.getElementById('root')!).render(
       <AuthProvider>
         <CartProvider>
           <App />
+          <Analytics />
         </CartProvider>
       </AuthProvider>
     </BrowserRouter>

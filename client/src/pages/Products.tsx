@@ -97,11 +97,11 @@ const Products = () => {
     <div className="min-h-screen bg-app-cream">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-app-text-light mb-6">
-          <Link to='/' className="hover:text-app-green transition-colors">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-app-text-light mb-6">
+          <Link to='/' aria-label="Home" className="hover:text-app-green transition-colors">
             <Home className="size-4"/>
           </Link>
-          <span>/</span>
+          <span aria-hidden="true">/</span>
           <span className="text-app-green font-medium">{activeCategory ? activeCategory.name : "All Products"}</span>
         </nav>
 
@@ -115,7 +115,7 @@ const Products = () => {
 
           </aside>
           {/* Main Content */}
-          <main className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0">
             {/*Header*/}
             <div className="flex items-start justify-between gap-3 mb-6">
               <div className="min-w-0">
@@ -130,7 +130,7 @@ const Products = () => {
 
                 {/* Sort */}
                 <div className="relative">
-                  <select value={sort} onChange={(e)=>updateFilter("sort",e.target.value)} className="appearance-none pl-3 pr-8 py-2 text-sm bg-white rounded-xl border border-app-border focus:border-app-green outline-none cursor-pointer">
+                  <select aria-label="Sort products" value={sort} onChange={(e)=>updateFilter("sort",e.target.value)} className="appearance-none pl-3 pr-8 py-2 text-sm bg-white rounded-xl border border-app-border focus:border-app-green outline-none cursor-pointer">
                     <option value="">Newest</option>
                     <option value="price_asc">Price: Low → High </option>
                     <option value="price_desc">Price: High → Low</option>
@@ -184,7 +184,7 @@ const Products = () => {
               </div>
             )}
 
-          </main>
+          </div>
 
         </div>
 
@@ -195,10 +195,10 @@ const Products = () => {
         <>
         <div className="fixed inset-0 bg-black/40 z-50" onClick={()=>setMobileFiltersOpen(false)}/>
 
-        <div className="fixed bottom-0 left-0 right-0 bg-white z-50 rounded-t-2xl max-h-[80vh] overflow-y-auto animate-slide-in-up">
+        <div role="dialog" aria-modal="true" aria-labelledby="mobile-filters-title" className="fixed bottom-0 left-0 right-0 bg-white z-50 rounded-t-2xl max-h-[80vh] overflow-y-auto animate-slide-in-up">
           <div className="flex items-center justify-between p-4 border-b border-app-border">
-            <h3 className="text-lg font-semibold text-app-green">Filters</h3>
-            <button onClick={()=>setMobileFiltersOpen(false)} className="p-2 hover:bg-app-cream rounded-lg">
+            <h2 id="mobile-filters-title" className="text-lg font-semibold text-app-green">Filters</h2>
+            <button aria-label="Close filters" onClick={()=>setMobileFiltersOpen(false)} className="p-2 hover:bg-app-cream rounded-lg">
               <XIcon className="size-5"/>
             </button>
           </div>

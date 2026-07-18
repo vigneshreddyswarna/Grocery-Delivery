@@ -12,6 +12,8 @@ import adminRouter from "./routes/adminRoutes.js";
 import deliveryPartnerRouter from "./routes/deliveryPartnerRoutes.js";
 import { stripeWebhook } from "./controllers/webhooks.js";
 import { rateLimit, securityHeaders } from "./middleware/security.js";
+import { requestObservability } from "./middleware/observability.js";
+import { prisma } from "./config/prisma.js";
 
 const app = express();
 
@@ -19,6 +21,7 @@ app.disable("x-powered-by")
 app.set("trust proxy", 1)
 app.use(securityHeaders)
 app.use(rateLimit)
+app.use(requestObservability)
 
 app.post("/api/stripe",express.raw({type:'application/json'}),stripeWebhook)
 
@@ -62,6 +65,19 @@ const port = process.env.PORT || 5000;
 app.get('/', (req: Request, res: Response) => {
     res.send('Server is Live!');
 });
+
+app.get('/api/health', (_req: Request, res: Response) => {
+    res.status(200).json({ status: 'ok', service: 'freshcart-api', timestamp: new Date().toISOString() })
+})
+
+app.get('/api/ready', async (_req: Request, res: Response) => {
+    try {
+        await prisma.$queryRaw`SELECT 1`
+        res.status(200).json({ status: 'ready', database: 'connected', timestamp: new Date().toISOString() })
+    } catch {
+        res.status(503).json({ status: 'not_ready', database: 'unavailable', timestamp: new Date().toISOString() })
+    }
+})
 
 app.use('/api/auth',authRouter)
 app.use('/api/products',productRouter)

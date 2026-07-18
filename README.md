@@ -4,6 +4,8 @@ FreshCart is a full-stack grocery delivery platform with customer shopping, admi
 
 [Live Website](https://grocery-delivery-web.vercel.app) | [API Health Check](https://grocery-delivery-api-omega.vercel.app)
 
+Operational monitoring, readiness checks, backup drills, and incident response are documented in [OPERATIONS.md](OPERATIONS.md).
+
 ## Screenshots
 
 ### Storefront Home

@@ -8,7 +8,6 @@ import { useAuth } from "../context/AuthContext"
 import api from "../config/api"
 import toast from "react-hot-toast"
 import { ADDRESS_API } from "../config/routes"
-import { geocodeIndianAddress, isIndianPincode, isPointInIndia, reverseGeocodeIndianPoint } from "../utils/indiaGeocoding"
 
 const Addresses = () => {
   const { updateUser } = useAuth()
@@ -20,32 +19,26 @@ const Addresses = () => {
   const [form, setForm] = useState({
     label: "",
     address: "",
-    addressLine2: "",
     city: "",
-    district: "",
     state: "",
     zip: "",
     isDefault: false,
     lat: "",
     lng: "",
-    mapLocationSource: "address",
-    mapLocationAccuracy: ""
+    mapLocationSource: "address"
   })
 
   const resetForm = () => {
     setForm({
       label: "",
       address: "",
-      addressLine2: "",
       city: "",
-      district: "",
       state: "",
       zip: "",
       isDefault: false,
       lat: "",
       lng: "",
-      mapLocationSource: "address",
-      mapLocationAccuracy: ""
+      mapLocationSource: "address"
     })
     setShowForm(false)
     setEditingId(null)
@@ -59,27 +52,37 @@ const Addresses = () => {
       }))
       .filter((item) => item.id)
 
+  const geocodeAddress = async (): Promise<{ lat: number; lng: number }> => {
+    const query = [form.address, form.city, form.state, form.zip].filter(Boolean).join(", ")
+    if (!query) throw new Error("Enter a delivery address before saving")
+
+    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`)
+    if (!response.ok) throw new Error("Unable to find this address on the map")
+
+    const results = await response.json()
+    const match = Array.isArray(results) ? results[0] : null
+    if (!match?.lat || !match?.lon) throw new Error("Unable to find this address on the map")
+
+    return {
+      lat: Number(match.lat),
+      lng: Number(match.lon)
+    }
+  }
+
   // Fixed: Corrected React event type signature to handle HTML form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     try {
-      if (!isIndianPincode(form.zip)) throw new Error("Enter a valid 6-digit Indian PIN code")
-      let coords = { lat: Number(form.lat), lng: Number(form.lng) }
-      let resolvedState=form.state
-      let resolvedDistrict=form.district
-      if (form.mapLocationSource !== "current") {
-        coords=await geocodeIndianAddress(form)
-        const resolved=await reverseGeocodeIndianPoint(coords.lat,coords.lng)
-        if (resolved.zip!==form.zip) throw new Error("That village/city does not match the entered PIN code. Check both and try again")
-        resolvedState=resolved.state
-        resolvedDistrict=resolved.district || ""
-      }
-      if (!isPointInIndia(coords.lat, coords.lng)) throw new Error("The selected map point must be within India")
+      const hasValidProvidedCoords = Number.isFinite(Number(form.lat)) && Number.isFinite(Number(form.lng))
+      const shouldUseAddressMapPoint = form.mapLocationSource === "address" || !hasValidProvidedCoords
+      const coords = shouldUseAddressMapPoint
+        ? await geocodeAddress()
+        : { lat: Number(form.lat), lng: Number(form.lng) }
       const payload = {
         label: form.label,
-        address: [form.address,form.addressLine2,resolvedDistrict].filter(Boolean).join(", "),
+        address: form.address,
         city: form.city,
-        state: resolvedState,
+        state: form.state,
         zip: form.zip,
         isDefault: form.isDefault,
         ...coords
@@ -109,16 +112,13 @@ const Addresses = () => {
     setForm({
       label: add.label,
       address: add.address,
-      addressLine2: "",
       city: add.city,
-      district: "",
       state: add.state,
       zip: add.zip,
       isDefault: add.isDefault,
       lat: String(add.lat ?? ""),
       lng: String(add.lng ?? ""),
-      mapLocationSource: "address",
-      mapLocationAccuracy: ""
+      mapLocationSource: "manual"
     })
     // Fixed: Accounted for fallback Mongo identity schema structures safely
     setEditingId(add.id)

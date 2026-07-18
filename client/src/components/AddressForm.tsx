@@ -2,7 +2,7 @@ import { LocateFixedIcon, LoaderCircleIcon, XIcon } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import toast from "react-hot-toast"
 import { reverseGeocodeIndianPoint } from "../utils/indiaGeocoding"
-import { getPreciseCurrentPosition, MAX_ACCEPTABLE_ACCURACY_METERS } from "../utils/preciseGeolocation"
+import { getPreciseCurrentPosition } from "../utils/preciseGeolocation"
 
 export interface AddressFormState {
     label:string
@@ -36,10 +36,10 @@ export default function AddressForm({resetForm,handleSubmit,form,setForm,editing
         setLocating(true)
         try{
             const position=await getPreciseCurrentPosition()
-            if(position.coords.accuracy>MAX_ACCEPTABLE_ACCURACY_METERS) throw new Error(`Location accuracy is only ±${Math.round(position.coords.accuracy)} m. Move near a window or outdoors and try again`)
             const resolved=await reverseGeocodeIndianPoint(position.coords.latitude,position.coords.longitude)
             update({...resolved,lat:String(resolved.lat),lng:String(resolved.lng),mapLocationSource:"current",mapLocationAccuracy:String(Math.round(position.coords.accuracy))})
-            toast.success(`Precise location detected (±${Math.round(position.coords.accuracy)} m)`)
+            const missing=[!resolved.address&&"house/street",!resolved.city&&"village/city",!resolved.zip&&"PIN code"].filter(Boolean)
+            toast.success(missing.length ? `Location detected. Please enter the missing ${missing.join(", ")}.` : `Location detected (±${Math.round(position.coords.accuracy)} m)`)
         }catch(error){
             const denied=typeof error==="object"&&error!==null&&"code" in error&&(error as GeolocationPositionError).code===1
             toast.error(denied ? "Allow precise location access in your browser settings" : error instanceof Error ? error.message : "Unable to autofill the address")
@@ -64,7 +64,7 @@ export default function AddressForm({resetForm,handleSubmit,form,setForm,editing
                         <label className="block text-sm font-medium text-app-green">PIN Code<input type="text" required inputMode="numeric" pattern="[1-9][0-9]{5}" maxLength={6} value={form.zip} onChange={event=>update({zip:event.target.value.replace(/\D/g,"").slice(0,6),mapLocationSource:"address",lat:"",lng:""})} placeholder="6-digit PIN" className="mt-1.5 w-full px-4 py-2.5 text-sm rounded-xl border border-app-border focus:border-app-green outline-none" /></label>
                     </div>
                     <label className="flex items-center gap-2"><input type="checkbox" checked={form.isDefault} onChange={event=>update({isDefault:event.target.checked})}/><span className="text-sm">Set as default address</span></label>
-                    <div className="rounded-xl bg-app-cream/70 px-3 py-2 text-xs text-app-text-light" aria-live="polite">{hasDetectedLocation?<span className="font-semibold text-green-700">Location detected within ±{form.mapLocationAccuracy} m and address filled.</span>:"We will automatically locate the pin using your village/city and PIN code when you save."}</div>
+                    <div className="rounded-xl bg-app-cream/70 px-3 py-2 text-xs text-app-text-light" aria-live="polite">{hasDetectedLocation?<span className="font-semibold text-green-700">Location detected within ±{form.mapLocationAccuracy} m. Check any address fields that could not be filled automatically.</span>:"We will automatically locate the pin using your village/city and PIN code when you save."}</div>
                 </div>
                 <button type="submit" disabled={locating} className="mt-6 w-full py-3 bg-app-green text-white font-semibold rounded-xl disabled:opacity-50">{editingId ? "Update Address" : "Save Address"}</button>
             </form>

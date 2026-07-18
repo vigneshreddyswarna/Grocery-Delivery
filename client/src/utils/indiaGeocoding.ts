@@ -129,12 +129,9 @@ export const reverseGeocodeIndianPoint = async (lat: number, lng: number): Promi
         .filter(Boolean).join(" ")
     const locality = details.neighbourhood || details.suburb || details.quarter || details.hamlet
     const address = [street, locality].filter(Boolean).join(", ") || result?.display_name?.split(",").slice(0, 2).join(", ") || ""
-    const city = details.village || details.town || details.city || details.municipality || ""
+    const city = details.village || details.town || details.city || details.municipality || details.suburb || details.hamlet || ""
     const district = details.state_district || details.county || ""
     const state = details.state || details.state_district || ""
     const zip = String(details.postcode || "").replace(/\s/g, "")
-    if (!address || !city || !state || !isIndianPincode(zip)) {
-        throw new Error("Location detected, but the complete address could not be resolved. Please fill the missing fields")
-    }
     return { address, addressLine2:locality || "", city, district, state, zip, lat, lng }
 }

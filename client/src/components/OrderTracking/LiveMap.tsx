@@ -67,7 +67,6 @@ export default function LiveMap({ order, liveLocation }: { order: Order, liveLoc
                 <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(45deg)">
                     ${vehicle.path}
                 </svg>
-                <span style="position:absolute;right:-3px;top:-3px;width:13px;height:13px;border-radius:999px;background:#22c55e;border:2px solid #fff;transform:rotate(45deg)"></span>
             </div>`,
         iconSize: [48, 48],
         iconAnchor: [12, 43],

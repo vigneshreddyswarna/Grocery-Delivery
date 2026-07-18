@@ -5,6 +5,7 @@ import Stripe from 'stripe'
 import { fulfillPaidOrder, releaseUnpaidOrder, restoreOrderStock } from "../services/orderPayment.js";
 import { canTransitionOrder, isOrderStatus } from "../utils/orderStatus.js";
 import { cleanString, isPositiveInteger, isValidCoordinate } from "../utils/validation.js";
+import { calculateOrderMoney, paiseToDecimal, parseMoneyToPaise } from "../utils/money.js";
 
 type RequestedItem = {product:string,quantity:number}
 
@@ -96,15 +97,20 @@ export const createOrder = async (req: Request, res: Response) => {
             product: dbProduct.id,
             name: dbProduct.name,
             image: dbProduct.image,
-            price: dbProduct.price,
+            price: Number(dbProduct.price),
             quantity: item.quantity,
             unit: dbProduct.unit
         }
     })
-    const subtotal = orderItems.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0)
-    const deliveryFee = subtotal >= 499 ? 0 : 35
-    const tax = Math.round(subtotal * 0.05 * 100) / 100
-    const total = Math.round((subtotal + deliveryFee + tax) * 100) / 100
+    const money = calculateOrderMoney(orderItems.map(item => {
+        const unitPricePaise = parseMoneyToPaise(item.price)
+        if (unitPricePaise === null) throw new Error(`Invalid product price for ${item.name}`)
+        return {unitPricePaise, quantity:item.quantity}
+    }))
+    const subtotal = paiseToDecimal(money.subtotalPaise)
+    const deliveryFee = paiseToDecimal(money.deliveryFeePaise)
+    const tax = paiseToDecimal(money.taxPaise)
+    const total = paiseToDecimal(money.totalPaise)
     const order = await prisma.$transaction(async(tx)=>{
         for(const item of orderItems){
             const reserved=await tx.product.updateMany({
@@ -146,7 +152,7 @@ export const createOrder = async (req: Request, res: Response) => {
                         product_data:{
                             name:"Payment Groceries"
                         },
-                        unit_amount:Math.round(total * 100)
+                        unit_amount:money.totalPaise
                     },
                     quantity: 1,
                 },

@@ -21,6 +21,13 @@ The database provider remains the source of truth for backups. Enable Neon point
 
 Never restore over production as a test. Never commit database URLs or exported customer data.
 
+## Schema migrations
+
+- Back up production before applying a migration that transforms existing data.
+- `20260719010000_precise_money_and_rate_limits` rounds legacy floating-point currency values to two decimal places and creates the shared rate-limit bucket table.
+- Deploy migrations once, confirm `/api/ready`, then smoke-test product creation and checkout before promoting the web deployment.
+- Roll back application code through Vercel; restore the database from the provider backup if a data-transforming migration must be reversed.
+
 ## Incident response
 
 1. Confirm impact using `/api/health` and `/api/ready`.

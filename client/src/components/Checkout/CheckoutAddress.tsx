@@ -22,7 +22,8 @@ const CheckoutAddress = ({ user, address, setAddress, setStep }: CheckoutAddress
                     <h3 className="text-sm font-semibold text-app-green mb-3">Saved Addresses</h3>
                     <div className="grid sm:grid-cols-2 gap-3">
                         {user.addresses.map((addr) => (
-                            <div
+                            <button
+                                type="button"
                                 key={addr.id || addr.label}
                                 onClick={() => setAddress({
                                     id: addr.id,
@@ -35,16 +36,16 @@ const CheckoutAddress = ({ user, address, setAddress, setStep }: CheckoutAddress
                                     lng: addr.lng,
                                     isDefault: addr.isDefault,
                                 })}
-                                className={`p-4 rounded-xl border cursor-pointer transition-colors ${address.label === addr.label && address.address === addr.address ? 'border-app-green bg-app-cream' : 'border-app-border hover:bg-app-cream'}`}
+                                className={`p-4 rounded-xl border cursor-pointer text-left transition-colors ${address.label === addr.label && address.address === addr.address ? 'border-app-green bg-app-cream' : 'border-app-border hover:bg-app-cream'}`}
                             >
                                 <div className="flex items-center gap-2 mb-1">
                                     <MapPinIcon className="size-4 text-app-green" />
                                     <span className="font-semibold text-zinc-900 text-sm">{addr.label}</span>
-                                    {addr.isDefault && <span className="text-[10px] font-semibold text-app-orange uppercase tracking-wider bg-orange-50 px-2 py-0.5 rounded-full">Default</span>}
+                                    {addr.isDefault && <span className="text-[10px] font-semibold text-orange-800 uppercase tracking-wider bg-orange-50 px-2 py-0.5 rounded-full">Default</span>}
                                 </div>
                                 <p className="text-sm text-zinc-600 truncate">{addr.address}</p>
-                                <p className="text-xs text-zinc-500">{addr.city}, {addr.state} {addr.zip}</p>
-                            </div>
+                                <p className="text-xs text-zinc-700">{addr.city}, {addr.state} {addr.zip}</p>
+                            </button>
                         ))}
                     </div>
                 </div>

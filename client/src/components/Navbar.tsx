@@ -166,7 +166,7 @@ const Navbar = () => {
                     <div className="hidden md:flex items-center gap-6 text-sm text-zinc-600">
                         <Link to='/'>Home</Link>
                         <Link to='/products'>Products</Link>
-                        <Link to='/deals' className="text-app-orange">Deals</Link>
+                        <Link to='/deals' className="text-orange-700">Deals</Link>
                         {user?.isAdmin && <Link to='/admin' className="text-app-green font-medium">Admin</Link>}
                     </div>
 
@@ -174,7 +174,7 @@ const Navbar = () => {
                     <form  onSubmit={handleSearch} className="hidden sm:flex flex-1 max-w-sm text-xs sm:text-sm">
                         <div className="relative w-full">
                             <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-zinc-500" />
-                            <input 
+                            <input aria-label="Search groceries"
                                 type="text" 
                                 placeholder="Search for groceries..." 
                                 value={searchQuery} 
@@ -187,7 +187,7 @@ const Navbar = () => {
                     {/* Right Actions */}
                     <div className="flex items-center gap-3">
                         {/* Cart */}
-                        <button className="relative p-2 rounded-xl" onClick={() => setIsCartOpen(true)}>
+                        <button aria-label={`Open cart with ${cartCount} items`} className="relative p-2 rounded-xl" onClick={() => setIsCartOpen(true)}>
                             <ShoppingCartIcon className="size-5 text-zinc-900" />
                             {cartCount > 0 && (
                                 <span className="absolute -top-1 -right-1 size-4 bg-app-orange text-white text-[10px] rounded-full flex items-center justify-center">
@@ -199,7 +199,7 @@ const Navbar = () => {
                         {/* User / Menu Actions */}
                         <div className="relative">
                             {user ? (
-                                <button onClick={() => setUserMenuOpen(!userMenuOpen)} className="flex items-center gap-2 p-2 focus:outline-none">
+                                <button aria-label="Open account menu" aria-expanded={userMenuOpen} onClick={() => setUserMenuOpen(!userMenuOpen)} className="flex items-center gap-2 p-2 focus-visible:ring-2 focus-visible:ring-app-orange rounded-lg">
                                     <div className="size-7 rounded-full bg-green-950 text-white flex items-center justify-center text-sm font-semibold">
                                         {userInitial}
                                     </div>
@@ -210,7 +210,7 @@ const Navbar = () => {
                                     <Link to='/login' className="hidden md:flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-950 rounded-full hover:bg-green-900 transition-colors">
                                         <UserIcon size={16} /> Sign In
                                     </Link>
-                                    <button onClick={() => setUserMenuOpen(!userMenuOpen)} className="md:hidden p-1 focus:outline-none">
+                                    <button aria-label="Open navigation menu" aria-expanded={userMenuOpen} onClick={() => setUserMenuOpen(!userMenuOpen)} className="md:hidden p-1 focus-visible:ring-2 focus-visible:ring-app-orange rounded-lg">
                                         {userMenuOpen ? <XIcon className="size-6 text-zinc-600" /> : <MenuIcon className="size-6 text-zinc-600" />}
                                     </button>
                                 </div>

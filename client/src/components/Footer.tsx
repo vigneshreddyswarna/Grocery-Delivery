@@ -24,7 +24,7 @@ const Footer = () => {
                     {/* Dynamic sections */}
                     {footerData.sections.map((section, i)=>(
                         <div key={i}>
-                            <h3 className="text-sm font-semibold uppercase mb-4">{section.title}</h3>
+                            <h2 className="text-sm font-semibold uppercase mb-4">{section.title}</h2>
                             <ul className="space-y-2.5">
                                 {section.links.map((link, i)=>(
                                     <li key={i}>
@@ -43,7 +43,7 @@ const Footer = () => {
 
                     {/* Contact */}
                     <div>
-                        <h3 className="text-sm font-semibold uppercase mb-4">Project</h3>
+                        <h2 className="text-sm font-semibold uppercase mb-4">Project</h2>
                         <ul className="space-y-3">
                             {footerData.contact.map((item, i)=>{
                                 const Icon=item.icon

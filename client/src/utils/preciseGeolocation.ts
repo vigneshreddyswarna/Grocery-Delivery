@@ -1,11 +1,12 @@
-export const MAX_ACCEPTABLE_ACCURACY_METERS = 150
+export const MAX_ACCEPTABLE_ACCURACY_METERS = 100
 
 export const getPreciseCurrentPosition = (
-    options: { timeoutMs?: number; targetAccuracyMeters?: number } = {},
+    options: { timeoutMs?: number; targetAccuracyMeters?: number; maxAcceptableAccuracyMeters?: number } = {},
 ): Promise<GeolocationPosition> => new Promise((resolve, reject) => {
     if (!navigator.geolocation) return reject(new Error("Location is not supported by this browser"))
-    const timeoutMs = options.timeoutMs ?? 20_000
-    const targetAccuracy = options.targetAccuracyMeters ?? 50
+    const timeoutMs = options.timeoutMs ?? 45_000
+    const targetAccuracy = options.targetAccuracyMeters ?? 40
+    const maxAcceptableAccuracy = options.maxAcceptableAccuracyMeters ?? MAX_ACCEPTABLE_ACCURACY_METERS
     let best: GeolocationPosition | undefined
     let settled = false
     let timer = 0
@@ -15,7 +16,8 @@ export const getPreciseCurrentPosition = (
         settled = true
         navigator.geolocation.clearWatch(watchId)
         window.clearTimeout(timer)
-        if (best) resolve(best)
+        if (best && best.coords.accuracy <= maxAcceptableAccuracy) resolve(best)
+        else if (best) reject(new Error(`Your device only provided an approximate location (±${Math.round(best.coords.accuracy)} m). Enable Precise Location and try outdoors or near a window.`))
         else reject(error ?? new Error("Unable to determine your current location"))
     }
     watchId = navigator.geolocation.watchPosition(

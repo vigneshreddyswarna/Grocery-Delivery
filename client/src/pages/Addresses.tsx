@@ -8,7 +8,7 @@ import { useAuth } from "../context/AuthContext"
 import api from "../config/api"
 import toast from "react-hot-toast"
 import { ADDRESS_API } from "../config/routes"
-import { isIndianPincode, isPointInIndia } from "../utils/indiaGeocoding"
+import { geocodeIndianAddress, isIndianPincode, isPointInIndia, reverseGeocodeIndianPoint } from "../utils/indiaGeocoding"
 
 const Addresses = () => {
   const { updateUser } = useAuth()
@@ -64,16 +64,22 @@ const Addresses = () => {
     e.preventDefault()
     try {
       if (!isIndianPincode(form.zip)) throw new Error("Enter a valid 6-digit Indian PIN code")
-      if (form.mapLocationSource !== "current") throw new Error("Detect your current location before saving the address")
-      const hasValidProvidedCoords = Number.isFinite(Number(form.lat)) && Number.isFinite(Number(form.lng))
-      if (!hasValidProvidedCoords) throw new Error("Unable to read the detected location. Please try again")
-      const coords = { lat: Number(form.lat), lng: Number(form.lng) }
+      let coords = { lat: Number(form.lat), lng: Number(form.lng) }
+      let resolvedState=form.state
+      let resolvedDistrict=form.district
+      if (form.mapLocationSource !== "current") {
+        coords=await geocodeIndianAddress(form)
+        const resolved=await reverseGeocodeIndianPoint(coords.lat,coords.lng)
+        if (resolved.zip!==form.zip) throw new Error("That village/city does not match the entered PIN code. Check both and try again")
+        resolvedState=resolved.state
+        resolvedDistrict=resolved.district || ""
+      }
       if (!isPointInIndia(coords.lat, coords.lng)) throw new Error("The selected map point must be within India")
       const payload = {
         label: form.label,
-        address: [form.address,form.addressLine2,form.district].filter(Boolean).join(", "),
+        address: [form.address,form.addressLine2,resolvedDistrict].filter(Boolean).join(", "),
         city: form.city,
-        state: form.state,
+        state: resolvedState,
         zip: form.zip,
         isDefault: form.isDefault,
         ...coords
@@ -111,7 +117,7 @@ const Addresses = () => {
       isDefault: add.isDefault,
       lat: String(add.lat ?? ""),
       lng: String(add.lng ?? ""),
-      mapLocationSource: "manual",
+      mapLocationSource: "address",
       mapLocationAccuracy: ""
     })
     // Fixed: Accounted for fallback Mongo identity schema structures safely

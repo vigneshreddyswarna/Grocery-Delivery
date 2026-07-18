@@ -41,10 +41,10 @@ const CheckoutAddress = ({ user, address, setAddress, setStep }: CheckoutAddress
                                 <div className="flex items-center gap-2 mb-1">
                                     <MapPinIcon className="size-4 text-app-green" />
                                     <span className="font-semibold text-zinc-900 text-sm">{addr.label}</span>
-                                    {addr.isDefault && <span className="text-[10px] font-semibold text-app-orange uppercase tracking-wider bg-orange-50 px-2 py-0.5 rounded-full">Default</span>}
+                                    {addr.isDefault && <span className="text-[10px] font-semibold text-orange-800 uppercase tracking-wider bg-orange-50 px-2 py-0.5 rounded-full">Default</span>}
                                 </div>
                                 <p className="text-sm text-zinc-600 truncate">{addr.address}</p>
-                                <p className="text-xs text-zinc-500">{addr.city}, {addr.state} {addr.zip}</p>
+                                <p className="text-xs text-zinc-700">{addr.city}, {addr.state} {addr.zip}</p>
                             </button>
                         ))}
                     </div>

@@ -193,6 +193,7 @@ export default function DeliveryDashboard() {
 
     return (
         <div className="space-y-6">
+            <h1 className="sr-only">Delivery Dashboard</h1>
             {/* Tabs + Tracking toggle */}
             <div className="flex items-center gap-2 flex-wrap">
                 {(["active", "completed"] as const).map((t) => (

@@ -69,13 +69,13 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-2xl border border-app-border overflow-hidden">
                 <div className="px-6 py-5 border-b border-app-border flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-zinc-900">Recent Orders</h2>
-                    <Link to="/admin/orders" className="text-sm font-medium text-app-orange hover:text-app-orange-dark transition-colors">
+                    <Link to="/admin/orders" className="text-sm font-medium text-orange-700 hover:text-orange-800 transition-colors">
                         View All →
                     </Link>
                 </div>
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto" tabIndex={0} aria-label="Recent orders table">
                     <table className="w-full text-left text-sm whitespace-nowrap">
-                        <thead className="bg-app-cream/50 text-zinc-500 uppercase text-xs font-semibold">
+                        <thead className="bg-app-cream/50 text-zinc-700 uppercase text-xs font-semibold">
                             <tr>
                                 <th className="px-6 py-3">Order ID</th>
                                 <th className="px-6 py-3">Customer</th>

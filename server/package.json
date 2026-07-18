@@ -18,6 +18,9 @@
   "author": "",
   "license": "MIT",
   "type": "module",
+  "overrides": {
+    "@hono/node-server": "1.19.13"
+  },
   "dependencies": {
     "@prisma/adapter-neon": "^7.8.0",
     "@prisma/client": "^7.8.0",

@@ -148,16 +148,16 @@ const Login = () => {
     return (
         <div className="min-h-dvh flex">
             {/* Left side */}
-            <div className="hidden lg:flex lg:w-1/2 bg-app-green relative items-center justify-center">
+            <aside aria-label="FreshCart welcome" className="hidden lg:flex lg:w-1/2 bg-app-green relative items-center justify-center">
                 <img src={heroSectionData.hero_image} alt="" className="absolute inset-0 object-cover h-full w-full bg-center opacity-10" />
                 <div className="relative text-center px-12">
                     <h2 className="text-4xl font-semibold text-white mb-4">Welcome back to FreshCart</h2>
                     <p className="text-white/60 font-serif text-xl max-w-sm mx-auto">Fresh groceries and organic produce, delivered to your doorstep.</p>
                 </div>
-            </div>
+            </aside>
 
             {/* Right Side */}
-            <div className="flex-1 flex items-center justify-center px-4 py-8 sm:py-12 bg-app-cream">
+            <main className="flex-1 flex items-center justify-center px-4 py-8 sm:py-12 bg-app-cream">
                 <div className="w-full max-w-md">
                     {/* Form header message */}
                     <div className="text-center mb-8">
@@ -173,7 +173,7 @@ const Login = () => {
                             <button 
                                 type="button" 
                                 onClick={handleStateToggle} 
-                                className="text-orange-500 ml-1 font-semibold hover:text-orange-600 transition-colors"
+                                className="text-orange-700 ml-1 font-semibold hover:text-orange-800 transition-colors"
                             >
                                 {isLoginState ? "Create one" : "Sign in"}
                             </button>
@@ -217,7 +217,7 @@ const Login = () => {
                                 />
                             </div>
                         </label>
-                        {isLoginState && <div className="text-right -mt-3"><Link to="/forgot-password" className="text-sm text-orange-600 hover:text-orange-700">Forgot password?</Link></div>}
+                        {isLoginState && <div className="text-right -mt-3"><Link to="/forgot-password" className="text-sm text-orange-700 hover:text-orange-800">Forgot password?</Link></div>}
                         
                         <label className="block text-sm font-medium text-gray-700">
                             Password
@@ -248,7 +248,7 @@ const Login = () => {
                         </button>
                     </form>
                 </div>
-            </div>
+            </main>
         </div>
     )
 }

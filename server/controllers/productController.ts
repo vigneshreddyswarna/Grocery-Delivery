@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/prisma.js";
 import { cleanString } from "../utils/validation.js";
+import { paiseToDecimal, parseMoneyToPaise } from "../utils/money.js";
  
 const optionalNumber = (value: unknown) => {
     if (value === undefined || value === null || value === "") return undefined
@@ -22,26 +23,26 @@ const buildProductData = (body: Record<string, unknown>, requireRequiredFields: 
     const category = cleanString(body.category, 80)
     const description = cleanString(body.description, 1000)
     const unit = cleanString(body.unit, 40)
-    const price = optionalNumber(body.price)
-    const originalPrice = optionalNumber(body.originalPrice)
+    const pricePaise = body.price === undefined ? undefined : parseMoneyToPaise(body.price)
+    const originalPricePaise = body.originalPrice === undefined ? undefined : parseMoneyToPaise(body.originalPrice)
     const stock = optionalInteger(body.stock)
     const rating = optionalNumber(body.rating)
     const reviewCount = optionalInteger(body.reviewCount)
 
-    if (requireRequiredFields && (!name || !image || !category || price === undefined)) {
+    if (requireRequiredFields && (!name || !image || !category || pricePaise === undefined)) {
         return {error:"Name, image, category and price are required"}
     }
 
-    if (body.price !== undefined && (typeof price !== "number" || price < 0)) return {error:"Price must be a non-negative number"}
-    if (body.originalPrice !== undefined && (typeof originalPrice !== "number" || originalPrice < 0)) return {error:"Original price must be a non-negative number"}
+    if (body.price !== undefined && pricePaise === null) return {error:"Price must be a non-negative amount with at most two decimal places"}
+    if (body.originalPrice !== undefined && originalPricePaise === null) return {error:"Original price must be a non-negative amount with at most two decimal places"}
     if (body.stock !== undefined && (typeof stock !== "number" || stock < 0)) return {error:"Stock must be a non-negative whole number"}
     if (body.rating !== undefined && (typeof rating !== "number" || rating < 0 || rating > 5)) return {error:"Rating must be between 0 and 5"}
     if (body.reviewCount !== undefined && (typeof reviewCount !== "number" || reviewCount < 0)) return {error:"Review count must be a non-negative whole number"}
 
     if (name) data.name = name
     if (description || body.description !== undefined) data.description = description
-    if (price !== undefined) data.price = price
-    if (originalPrice !== undefined) data.originalPrice = originalPrice
+    if (pricePaise !== undefined && pricePaise !== null) data.price = paiseToDecimal(pricePaise)
+    if (originalPricePaise !== undefined && originalPricePaise !== null) data.originalPrice = paiseToDecimal(originalPricePaise)
     if (image) data.image = image
     if (category) data.category = category
     if (unit || body.unit !== undefined) data.unit = unit || "piece"
@@ -67,7 +68,8 @@ export const getFlashDeals = async(req:Request, res: Response)=>{
     })
 
     const productsWithDiscount=products.map((p:any)=>{
-        const discount = p.originalPrice && p.price ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100) : 0;
+        const originalPrice=Number(p.originalPrice),price=Number(p.price)
+        const discount = originalPrice && price ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
         return {...p, discount}
     })
     
@@ -107,7 +109,8 @@ export const getProducts = async(req:Request, res: Response) => {
     ])
 
     const productsWithDiscount=products.map((p:any)=>{
-        const discount = p.originalPrice && p.price ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100) : 0;
+        const originalPrice=Number(p.originalPrice),price=Number(p.price)
+        const discount = originalPrice && price ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
         return {...p, discount}
     })
     res.json({products: productsWithDiscount, total, page, pages: limit ? Math.ceil(total / limit) : 1})
@@ -123,7 +126,8 @@ export const getProduct = async(req:Request, res: Response) => {
         return
     }
 
-    const discount = product.originalPrice && product.price ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100):0
+    const originalPrice=Number(product.originalPrice),price=Number(product.price)
+    const discount = originalPrice && price ? Math.round(((originalPrice - price) / originalPrice) * 100):0
 
     res.json({product: {...product, discount}})
 

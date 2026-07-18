@@ -40,7 +40,7 @@ Operational monitoring, readiness checks, backup drills, and incident response a
 - Admin-confirmed delivery partner onboarding: admin enters partner details, OTP is sent to the partner email, and the partner account is created only after admin confirms the OTP.
 - Delivery partner portal with assigned deliveries, status updates, live location sharing, and delivery OTP completion.
 - Stripe checkout integration with webhook-based payment confirmation and stock handling.
-- PostgreSQL data layer powered by Prisma migrations and generated Prisma client.
+- PostgreSQL data layer powered by Prisma migrations and generated Prisma client. Currency is stored as fixed-precision decimals and calculated in integer paise.
 - Vercel-ready frontend and backend deployment configuration.
 
 ## Tech Stack
@@ -233,8 +233,9 @@ VITE_CURRENCY_SYMBOL=₹
 - OTPs are stored as hashes, not plain text.
 - Payment completion is handled through Stripe webhooks.
 - Admin access is controlled through the `ADMIN_EMAILS` environment variable.
-- API responses include restrictive security headers and requests are rate-limited per client.
+- API responses include restrictive security headers. Rate limits use atomic PostgreSQL buckets so limits remain consistent across serverless instances, with an in-process fallback during database outages.
 - Authentication middleware requires an exact `Bearer <token>` authorization scheme and enforces account roles.
+- GitHub dependency graph, Dependabot alerts and security updates, malware alerts, CodeQL, and private vulnerability reporting are enabled for the repository.
 
 ## License
 

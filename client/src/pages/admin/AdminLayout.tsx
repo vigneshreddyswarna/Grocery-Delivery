@@ -46,7 +46,7 @@ export default function AdminLayout() {
                                 end={true}
                                 className={({ isActive }) => `flex items-center gap-3 p-2.5 rounded-md text-sm transition-colors ${isActive
                                     ? "bg-app-green text-white"
-                                    : "text-app-text-light hover:bg-orange-50 hover:text-zinc-900"
+                                    : "text-zinc-700 hover:bg-orange-50 hover:text-zinc-900"
                                     }`}
                             >
                                 <link.icon className="size-4" /> {link.label}

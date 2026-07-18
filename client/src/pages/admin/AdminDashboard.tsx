@@ -56,7 +56,7 @@ export default function AdminDashboard() {
                     <div key={card.label} className="bg-white rounded-2xl p-5 border border-app-border flex justify-between gap-3">
                         <div>
                             <p className="text-2xl font-semibold text-zinc-900">{card.value}</p>
-                            <p className="text-sm text-app-text-light">{card.label}</p>
+                            <p className="text-sm text-zinc-700">{card.label}</p>
                         </div>
                         <div className={`size-10 rounded-xl flex-center bg-orange-50 text-orange-600`}>
                             <card.icon className="size-5" />
@@ -88,7 +88,7 @@ export default function AdminDashboard() {
                         <tbody className="divide-y divide-app-border">
                             {stats?.recentOrders.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-8 text-center text-zinc-500">No orders yet.</td>
+                                    <td colSpan={6} className="px-6 py-8 text-center text-zinc-700">No orders yet.</td>
                                 </tr>
                             ) : (
                                 stats?.recentOrders.map((order) => (

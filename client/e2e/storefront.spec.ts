@@ -1,5 +1,10 @@
 import AxeBuilder from "@axe-core/playwright"
-import { expect, test } from "@playwright/test"
+import { expect, test, type Page } from "@playwright/test"
+
+const analyzeStablePage = async (page: Page) => {
+    await page.addStyleTag({content:"*, *::before, *::after { animation: none !important; transition: none !important; }"})
+    return new AxeBuilder({page}).analyze()
+}
 
 test.beforeEach(async ({ page }) => {
     await page.route("**/api/**", async (route) => {
@@ -27,7 +32,7 @@ test("storefront navigation works without accessibility violations", async ({ pa
     await page.goto("/products")
     await expect(page).toHaveURL(/\/products$/)
     await expect(page.getByRole("heading", { name: /products/i })).toBeVisible()
-    const results = await new AxeBuilder({ page }).analyze()
+    const results = await analyzeStablePage(page)
     expect(results.violations.map(({ id, nodes }) => ({ id, targets: nodes.map(node => node.target) }))).toEqual([])
 })
 
@@ -50,7 +55,7 @@ test("mobile navigation exposes named controls", async ({ page, isMobile }) => {
 test("authentication page has no automated accessibility violations", async ({ page }) => {
     await page.goto("/login")
     await expect(page.getByRole("heading", { name: "Sign in to your account" })).toBeVisible()
-    const results = await new AxeBuilder({ page }).analyze()
+    const results = await analyzeStablePage(page)
     expect(results.violations.map(({ id, nodes }) => ({ id, targets: nodes.map(node => node.target) }))).toEqual([])
 })
 
@@ -62,7 +67,7 @@ test("authenticated admin dashboard is keyboard and screen-reader ready", async 
     await page.goto("/admin")
     await expect(page.getByRole("heading", { name: "Admin Panel" })).toBeVisible()
     await expect(page.getByText("Total Orders", { exact:true })).toBeVisible()
-    const results = await new AxeBuilder({ page }).analyze()
+    const results = await analyzeStablePage(page)
     expect(results.violations.map(({ id, nodes }) => ({ id, targets: nodes.map(node => node.target) }))).toEqual([])
 })
 
@@ -74,7 +79,7 @@ test("delivery dashboard exposes named controls without accessibility violations
     await page.goto("/delivery")
     await expect(page.getByRole("button", { name: "Share Location" })).toBeVisible()
     await expect(page.getByRole("button", { name: "Sign out delivery partner" })).toBeVisible()
-    const results = await new AxeBuilder({ page }).analyze()
+    const results = await analyzeStablePage(page)
     expect(results.violations.map(({ id, nodes }) => ({ id, targets: nodes.map(node => node.target) }))).toEqual([])
 })
 
@@ -89,6 +94,6 @@ test("authenticated checkout address step is accessible and keyboard operable", 
     await expect(page.getByRole("heading", { name: "Checkout" })).toBeVisible()
     await expect(page.getByRole("button", { name: /Home/ })).toBeVisible()
     await expect(page.getByRole("button", { name: /Continue to Payment/ })).toBeEnabled()
-    const results = await new AxeBuilder({ page }).analyze()
+    const results = await analyzeStablePage(page)
     expect(results.violations.map(({ id, nodes }) => ({ id, targets: nodes.map(node => node.target) }))).toEqual([])
 })
